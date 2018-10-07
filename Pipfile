@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+nuclio-sdk = {editable = true, path = "."}
+requests = "*"
+twine = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
