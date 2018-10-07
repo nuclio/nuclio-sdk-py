@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from libs.nuclio_sdk.test.platform import Platform
-from libs.nuclio_sdk.test.test_case import TestCase
+from nuclio_sdk.test.platform import Platform
+from nuclio_sdk.test.test_case import TestCase

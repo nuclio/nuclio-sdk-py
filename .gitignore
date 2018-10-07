@@ -1,0 +1,4 @@
+.DS_Store
+build/
+dist/
+nuclio_sdk.egg-info/

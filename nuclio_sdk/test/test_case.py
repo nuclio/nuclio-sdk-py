@@ -16,13 +16,13 @@ import unittest
 import os
 import copy
 
-import libs.nuclio_sdk.test
+import nuclio_sdk.test
 
 
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        self._platform = libs.nuclio_sdk.test.Platform()
+        self._platform = nuclio_sdk.test.Platform()
         self._environ_copy = copy.copy(os.environ)
 
     def tearDown(self):

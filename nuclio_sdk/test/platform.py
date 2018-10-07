@@ -16,21 +16,21 @@ import sys
 import logging
 import unittest.mock
 
-import libs.nuclio_sdk
+import nuclio_sdk
 
 
 class Platform(object):
 
     def __init__(self):
-        self._logger = libs.nuclio_sdk.Logger(logging.DEBUG)
-        self._logger.set_handler('default', sys.stdout, libs.nuclio_sdk.logger.HumanReadableFormatter())
+        self._logger = nuclio_sdk.Logger(logging.DEBUG)
+        self._logger.set_handler('default', sys.stdout, nuclio_sdk.logger.HumanReadableFormatter())
 
         self._handler_contexts = {}
         self._call_function_mock = unittest.mock.MagicMock()
         self._kind = 'test'
 
         # for tests that need a context
-        self._context = libs.nuclio_sdk.Context(self._logger, self)
+        self._context = nuclio_sdk.Context(self._logger, self)
 
     def call_handler(self, handler, event):
         return handler(self._get_handler_context(handler), event)
@@ -67,7 +67,7 @@ class Platform(object):
         except KeyError:
 
             # first time we're calling this handler
-            context = libs.nuclio_sdk.Context(self._logger, self)
+            context = nuclio_sdk.Context(self._logger, self)
 
             # get handler module
             handler_module = sys.modules[handler.__module__]

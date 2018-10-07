@@ -40,7 +40,7 @@ def parse_deps():
 
 setup(
     name='nuclio_sdk',
-    version='0.0.1',
+    version='0.0.3',
     description='Client for the Nuclio serverless platform',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -48,7 +48,7 @@ setup(
     author_email='erand@iguazio.com',
     license='Apache 2',
     url='https://github.com/nuclio/nuclio-sdk-py',
-    py_modules=['nuclio_sdk'],
+    packages=['nuclio_sdk', 'nuclio_sdk.test'],
     # install_requires=parse_deps(),
     classifiers=[
         'Development Status :: 4 - Beta',
