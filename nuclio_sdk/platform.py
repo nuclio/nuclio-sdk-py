@@ -50,6 +50,10 @@ class Platform(object):
         # use the headers from the event or default to empty dict
         headers = event.headers or {}
         headers['Content-Type'] = content_type
+        
+        # if no override header, use the name of the function to indicate the target
+        # this is needed to cold start a function in case it was scaled to zero
+        headers['X-Nuclio-Target'] = event.headers.get('X-Nuclio-Target', function_name)
 
         connection.request(event.method,
                            event.path,
