@@ -17,8 +17,10 @@ import nuclio_sdk
 
 class Context(object):
 
-    def __init__(self, logger=None, platform=None):
+    def __init__(self, logger=None, platform=None, worker_id=None, trigger_name=None):
         self.platform = platform or nuclio_sdk.Platform('test')
         self.logger = logger
         self.user_data = lambda: None
         self.Response = nuclio_sdk.Response
+        self.worker_id = worker_id
+        self.trigger_name = trigger_name
