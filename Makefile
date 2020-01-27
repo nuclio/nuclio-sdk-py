@@ -4,7 +4,7 @@ all:
 
 .PHONY: upload
 upload: clean build
-	echo pipenv run twine upload dist/*
+	pipenv run twine upload dist/*
 
 .PHONE: build
 build:
