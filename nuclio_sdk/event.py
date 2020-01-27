@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import sys
-import base64
 import json
 import datetime
 
@@ -39,6 +38,8 @@ class Event(object):
                  size=None,
                  timestamp=None,
                  url=None,
+                 shard_id=None,
+                 num_shards=None,
                  _type=None,
                  type_version=None,
                  version=None):
@@ -53,6 +54,8 @@ class Event(object):
         self.size = size
         self.timestamp = timestamp or 0
         self.url = url
+        self.shard_id = shard_id
+        self.num_shards = num_shards
         self.type = _type
         self.type_version = type_version
         self.version = version
@@ -71,10 +74,20 @@ class Event(object):
                 return value
 
     @staticmethod
+    def from_msgpack(parsed_data):
+        """Decode msgpack event encoded as JSON by processor"""
+
+        return Event.from_parsed_data(parsed_data)
+
+    @staticmethod
     def from_json(data):
         """Decode event encoded as JSON by processor"""
 
         parsed_data = json.loads(data)
+        return Event.from_parsed_data(parsed_data)
+
+    @classmethod
+    def from_parsed_data(cls, parsed_data):
         trigger = TriggerInfo(
             parsed_data['trigger']['class'],
             parsed_data['trigger']['kind'],
@@ -82,8 +95,8 @@ class Event(object):
 
         # extract content type, needed to decode body
         content_type = parsed_data['content_type']
-
-        return Event(body=Event.decode_body(parsed_data['body'], content_type),
+        body = Event.decode_body(parsed_data['body'], content_type)
+        return Event(body=body,
                      content_type=content_type,
                      trigger=trigger,
                      fields=parsed_data.get('fields'),
@@ -94,6 +107,8 @@ class Event(object):
                      size=parsed_data['size'],
                      timestamp=datetime.datetime.utcfromtimestamp(parsed_data['timestamp']),
                      url=parsed_data['url'],
+                     shard_id=parsed_data['shard_id'],
+                     num_shards=parsed_data['num_shards'],
                      _type=parsed_data['type'],
                      type_version=parsed_data['type_version'],
                      version=parsed_data['version'])
@@ -102,21 +117,13 @@ class Event(object):
     def decode_body(body, content_type):
         """Decode event body"""
 
-        if isinstance(body, dict):
-            return body
-        else:
+        if content_type == 'application/json':
             try:
-                decoded_body = base64.b64decode(body)
-            except:
-                return body
+                return json.loads(body.decode('utf-8'))
+            except Exception as exc:
+                sys.stderr.write(str(exc))
 
-            if content_type == 'application/json':
-                try:
-                    return json.loads(decoded_body)
-                except:
-                    pass
-
-            return decoded_body
+        return body
 
     def __repr__(self):
         return self.to_json()
