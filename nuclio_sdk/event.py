@@ -80,7 +80,7 @@ class Event(object):
 
         # extract content type, needed to decode body
         content_type = parsed_data['content_type']
-        body = Event.decode_msgpack_event_body(parsed_data['body'], content_type)
+        body = Event.decode_msgpack_body(parsed_data['body'], content_type)
         return Event.from_parsed_data(parsed_data, content_type, body)
 
     @staticmethod
@@ -91,7 +91,7 @@ class Event(object):
 
         # extract content type, needed to decode body
         content_type = parsed_data['content_type']
-        body = Event.decode_event_body(parsed_data['body'], content_type)
+        body = Event.decode_body(parsed_data['body'], content_type)
         return Event.from_parsed_data(parsed_data, body, content_type)
 
     @classmethod
@@ -118,7 +118,7 @@ class Event(object):
                    version=parsed_data['version'])
 
     @staticmethod
-    def decode_event_body(body, content_type):
+    def decode_body(body, content_type):
         """Decode event body"""
 
         if isinstance(body, dict):
@@ -138,7 +138,7 @@ class Event(object):
         return decoded_body
 
     @staticmethod
-    def decode_msgpack_event_body(body, content_type):
+    def decode_msgpack_body(body, content_type):
         """Decode msgpack event body"""
 
         if content_type == 'application/json':
