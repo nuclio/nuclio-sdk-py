@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import sys
 import json
 import datetime
@@ -77,45 +78,68 @@ class Event(object):
     def from_msgpack(parsed_data):
         """Decode msgpack event encoded as JSON by processor"""
 
-        return Event.from_parsed_data(parsed_data)
+        # extract content type, needed to decode body
+        content_type = parsed_data['content_type']
+        body = Event.decode_msgpack_event_body(parsed_data['body'], content_type)
+        return Event.from_parsed_data(parsed_data, content_type, body)
 
     @staticmethod
     def from_json(data):
         """Decode event encoded as JSON by processor"""
 
         parsed_data = json.loads(data)
-        return Event.from_parsed_data(parsed_data)
+
+        # extract content type, needed to decode body
+        content_type = parsed_data['content_type']
+        body = Event.decode_event_body(parsed_data['body'], content_type)
+        return Event.from_parsed_data(parsed_data, body, content_type)
 
     @classmethod
-    def from_parsed_data(cls, parsed_data):
+    def from_parsed_data(cls, parsed_data, body, content_type):
         trigger = TriggerInfo(
             parsed_data['trigger']['class'],
             parsed_data['trigger']['kind'],
         )
-
-        # extract content type, needed to decode body
-        content_type = parsed_data['content_type']
-        body = Event.decode_body(parsed_data['body'], content_type)
-        return Event(body=body,
-                     content_type=content_type,
-                     trigger=trigger,
-                     fields=parsed_data.get('fields'),
-                     headers=parsed_data.get('headers'),
-                     _id=parsed_data['id'],
-                     method=parsed_data['method'],
-                     path=parsed_data['path'],
-                     size=parsed_data['size'],
-                     timestamp=datetime.datetime.utcfromtimestamp(parsed_data['timestamp']),
-                     url=parsed_data['url'],
-                     shard_id=parsed_data['shard_id'],
-                     num_shards=parsed_data['num_shards'],
-                     _type=parsed_data['type'],
-                     type_version=parsed_data['type_version'],
-                     version=parsed_data['version'])
+        return cls(body=body,
+                   content_type=content_type,
+                   trigger=trigger,
+                   fields=parsed_data.get('fields'),
+                   headers=parsed_data.get('headers'),
+                   _id=parsed_data['id'],
+                   method=parsed_data['method'],
+                   path=parsed_data['path'],
+                   size=parsed_data['size'],
+                   timestamp=datetime.datetime.utcfromtimestamp(parsed_data['timestamp']),
+                   url=parsed_data['url'],
+                   shard_id=parsed_data['shard_id'],
+                   num_shards=parsed_data['num_shards'],
+                   _type=parsed_data['type'],
+                   type_version=parsed_data['type_version'],
+                   version=parsed_data['version'])
 
     @staticmethod
-    def decode_body(body, content_type):
+    def decode_event_body(body, content_type):
         """Decode event body"""
+
+        if isinstance(body, dict):
+            return body
+
+        try:
+            decoded_body = base64.b64decode(body)
+        except:
+            return body
+
+        if content_type == 'application/json':
+            try:
+                return json.loads(decoded_body)
+            except:
+                pass
+
+        return decoded_body
+
+    @staticmethod
+    def decode_msgpack_event_body(body, content_type):
+        """Decode msgpack event body"""
 
         if content_type == 'application/json':
             try:
