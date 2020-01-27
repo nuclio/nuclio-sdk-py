@@ -86,7 +86,7 @@ class Event(object):
         # extract content type, needed to decode body
         content_type = parsed_data['content_type']
         body = Event.decode_msgpack_body(parsed_data['body'], content_type)
-        return Event.from_parsed_data(parsed_data, content_type, body)
+        return Event.from_parsed_data(parsed_data, body, content_type)
 
     @staticmethod
     def from_json(data):
