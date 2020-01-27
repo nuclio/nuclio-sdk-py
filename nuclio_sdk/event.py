@@ -67,6 +67,11 @@ class Event(object):
             'class': self.trigger.klass,
             'kind': self.trigger.kind,
         }
+
+        # serialize it if is a datetime object
+        if isinstance(self.timestamp, datetime.datetime):
+            obj['timestamp'] = str(self.timestamp)
+
         return json.dumps(obj)
 
     def get_header(self, header_key):

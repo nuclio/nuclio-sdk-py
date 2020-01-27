@@ -3,10 +3,16 @@ all:
 	$(error please pick a target)
 
 .PHONY: upload
-upload:
-	rm -r dist || true
+upload: clean build
+	echo pipenv run twine upload dist/*
+
+.PHONE: build
+build:
 	python setup.py sdist bdist_wheel
-	pipenv run twine upload dist/*
+
+.PHONE: clean
+clean:
+	rm -rf dist
 
 .PHONY: clean_pyc
 clean_pyc:
