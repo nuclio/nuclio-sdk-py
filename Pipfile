@@ -9,6 +9,11 @@ requests = "*"
 twine = "*"
 
 [dev-packages]
+flake8 = "*"
 
 [requires]
 python_version = "3.7"
+
+[scripts]
+upload = "twine upload dist/*"
+flake8 = "flake8 nuclio_sdk"
