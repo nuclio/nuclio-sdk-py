@@ -55,8 +55,11 @@ class HumanReadableFormatter(logging.Formatter):
 
 class Logger(object):
 
-    def __init__(self, level):
-        self._logger = logging.getLogger('nuclio_sdk')
+    def __init__(self, level, worker_id=null):
+        logger_name = 'nuclio_sdk'
+        if worker_id:
+            logger_name = '{0}.{1}'.format(logger_name, worker_id)
+        self._logger = logging.getLogger(logger_name)
         self._logger.setLevel(level)
         self._handlers = {}
 
