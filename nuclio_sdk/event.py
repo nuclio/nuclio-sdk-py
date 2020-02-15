@@ -20,9 +20,9 @@ import datetime
 
 class TriggerInfo(object):
 
-    def __init__(self, klass='', kind=''):
-        self.klass = klass
+    def __init__(self, kind='', name=''):
         self.kind = kind
+        self.name = name
 
 
 class Event(object):
@@ -46,7 +46,7 @@ class Event(object):
                  version=None):
         self.body = body
         self.content_type = content_type
-        self.trigger = trigger or TriggerInfo(klass='', kind='')
+        self.trigger = trigger or TriggerInfo()
         self.fields = fields or {}
         self.headers = headers or {}
         self.id = _id
@@ -64,8 +64,8 @@ class Event(object):
     def to_json(self):
         obj = vars(self).copy()
         obj['trigger'] = {
-            'class': self.trigger.klass,
             'kind': self.trigger.kind,
+            'name': self.trigger.name
         }
 
         # serialize it if is a datetime object
@@ -102,8 +102,8 @@ class Event(object):
     @classmethod
     def from_parsed_data(cls, parsed_data, body, content_type):
         trigger = TriggerInfo(
-            parsed_data['trigger']['class'],
             parsed_data['trigger']['kind'],
+            parsed_data['trigger']['name']
         )
         return cls(body=body,
                    content_type=content_type,
