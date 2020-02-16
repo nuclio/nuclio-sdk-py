@@ -109,7 +109,7 @@ class Logger(object):
     def bind(self, **kw_args):
         self._bound_variables.update(kw_args)
 
-    def _update_bound_vars_and_log(self, level, message, args, kw_args=None):
+    def _update_bound_vars_and_log(self, level, message, *args, **kw_args=None):
         if kw_args is None:
             kw_args = {}
         kw_args.update(self._bound_variables)
