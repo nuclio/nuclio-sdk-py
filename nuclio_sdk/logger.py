@@ -57,6 +57,7 @@ class Logger(object):
     def __init__(self, level):
         self._logger = logging.getLogger('nuclio_sdk')
         self._logger.setLevel(level)
+        self._bound_variables = {}
         self._handlers = {}
 
     def set_handler(self, handler_name, file, formatter):
@@ -81,26 +82,36 @@ class Logger(object):
         # save as the named output
         self._handlers[handler_name] = stream_handler
 
-    def debug(self, message, *args):
-        self._logger.debug(message, *args)
+    def debug(self, msg, *args):
+        self._update_bound_vars_and_log(logging.DEBUG, msg, args)
 
-    def info(self, message, *args):
-        self._logger.info(message, *args)
+    def info(self, msg, *args):
+        self._update_bound_vars_and_log(logging.INFO, msg, args)
 
-    def warn(self, message, *args):
-        self._logger.warning(message, *args)
+    def warn(self, msg, *args):
+        self._update_bound_vars_and_log(logging.WARNING, msg, args)
 
-    def error(self, message, *args):
-        self._logger.error(message, *args)
+    def error(self, msg, *args):
+        self._update_bound_vars_and_log(logging.ERROR, msg, args)
 
     def debug_with(self, message, *args, **kw_args):
-        self._logger.debug(message, *args, extra={'with': kw_args})
+        self._update_bound_vars_and_log(logging.DEBUG, msg, args, kw_args)
 
     def info_with(self, message, *args, **kw_args):
-        self._logger.info(message, *args, extra={'with': kw_args})
+        self._update_bound_vars_and_log(logging.INFO, msg, args, kw_args)
 
     def warn_with(self, message, *args, **kw_args):
-        self._logger.warning(message, *args, extra={'with': kw_args})
+        self._update_bound_vars_and_log(logging.WARNING, msg, args, kw_args)
 
     def error_with(self, message, *args, **kw_args):
-        self._logger.error(message, *args, extra={'with': kw_args})
+        self._update_bound_vars_and_log(logging.ERROR, msg, args, kw_args)
+
+    def bind(self, **kw_args):
+        self._bound_variables.update(kw_args)
+
+    def _update_bound_vars_and_log(self, level, msg, args, kw_args=None):
+        if kw_args is None:
+            kw_args = {}
+        kw_args.update(self._bound_variables)
+
+        self._logger._log(level, msg, args, extra={'with': kw_args})
