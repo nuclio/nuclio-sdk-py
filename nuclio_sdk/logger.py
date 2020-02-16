@@ -94,16 +94,16 @@ class Logger(object):
     def error(self, msg, *args):
         self._update_bound_vars_and_log(logging.ERROR, msg, args)
 
-    def debug_with(self, message, *args, **kw_args):
+    def debug_with(self, msg, *args, **kw_args):
         self._update_bound_vars_and_log(logging.DEBUG, msg, args, kw_args)
 
-    def info_with(self, message, *args, **kw_args):
+    def info_with(self, msg, *args, **kw_args):
         self._update_bound_vars_and_log(logging.INFO, msg, args, kw_args)
 
-    def warn_with(self, message, *args, **kw_args):
+    def warn_with(self, msg, *args, **kw_args):
         self._update_bound_vars_and_log(logging.WARNING, msg, args, kw_args)
 
-    def error_with(self, message, *args, **kw_args):
+    def error_with(self, msg, *args, **kw_args):
         self._update_bound_vars_and_log(logging.ERROR, msg, args, kw_args)
 
     def bind(self, **kw_args):
