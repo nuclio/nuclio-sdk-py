@@ -112,4 +112,7 @@ class Logger(object):
     def _update_bound_vars_and_log(self, level, message, *args, **kw_args):
         kw_args.update(self._bound_variables)
 
-        self._logger._log(level, message, args, extra={'with': kw_args})
+        if len(kw_args) != 0:
+            self._logger._log(level, message, args, extra={'with': kw_args})
+
+        self._logger._log(level, message, args)
