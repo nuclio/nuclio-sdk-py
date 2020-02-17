@@ -114,5 +114,6 @@ class Logger(object):
 
         if len(kw_args) != 0:
             self._logger._log(level, message, args, extra={'with': kw_args})
+            return
 
         self._logger._log(level, message, args)
