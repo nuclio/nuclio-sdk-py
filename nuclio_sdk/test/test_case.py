@@ -26,4 +26,5 @@ class TestCase(unittest.TestCase):
         self._environ_copy = copy.copy(os.environ)
 
     def tearDown(self):
-        os.environ = self._environ_copy
+        if hasattr(self, '_environ_copy'):
+            os.environ = self._environ_copy

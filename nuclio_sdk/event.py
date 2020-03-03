@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import base64
-import sys
-import json
 import datetime
+import sys
+
+import nuclio_sdk.json
 
 
 class TriggerInfo(object):
@@ -72,7 +73,7 @@ class Event(object):
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
-        return json.dumps(obj)
+        return nuclio_sdk.Encoder().encode(obj)
 
     def get_header(self, header_key):
         for key, value in self.headers.items():
@@ -92,7 +93,7 @@ class Event(object):
     def from_json(data):
         """Decode event encoded as JSON by processor"""
 
-        parsed_data = json.loads(data)
+        parsed_data = nuclio_sdk.json.loads(data)
 
         # extract content type, needed to decode body
         content_type = parsed_data['content_type']
@@ -136,7 +137,7 @@ class Event(object):
 
         if content_type == 'application/json':
             try:
-                return json.loads(decoded_body)
+                return nuclio_sdk.json.loads(decoded_body)
             except:
                 pass
 
@@ -148,7 +149,7 @@ class Event(object):
 
         if content_type == 'application/json':
             try:
-                return json.loads(body.decode('utf-8'))
+                return nuclio_sdk.json.loads(body)
             except Exception as exc:
                 sys.stderr.write(str(exc))
 

@@ -14,9 +14,15 @@
 
 import sys
 import logging
-import unittest.mock
 
 import nuclio_sdk
+import nuclio_sdk.helpers
+
+# different HTTP client libraries for Python 2/3
+if nuclio_sdk.helpers.PYTHON2:
+    import mock
+else:
+    from unittest import mock
 
 
 class Platform(object):
@@ -26,7 +32,7 @@ class Platform(object):
         self._logger.set_handler('default', sys.stdout, nuclio_sdk.logger.HumanReadableFormatter())
 
         self._handler_contexts = {}
-        self._call_function_mock = unittest.mock.MagicMock()
+        self._call_function_mock = mock.MagicMock()
         self._kind = 'test'
 
         # for tests that need a context

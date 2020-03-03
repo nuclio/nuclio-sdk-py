@@ -18,3 +18,4 @@ from nuclio_sdk.event import Event, TriggerInfo
 from nuclio_sdk.platform import Platform
 from nuclio_sdk.response import Response
 from nuclio_sdk.exceptions import ExceptionWithResponse
+from nuclio_sdk.json import json, Encoder

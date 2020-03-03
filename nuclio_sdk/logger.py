@@ -14,14 +14,13 @@
 
 import logging
 
-import nuclio_sdk.json_encoder
+import nuclio_sdk
 
 
 class JSONFormatter(logging.Formatter):
     def __init__(self):
         super(JSONFormatter, self).__init__()
-
-        self._json_encoder = nuclio_sdk.json_encoder.Encoder()
+        self._json_encoder = nuclio_sdk.Encoder()
 
     def format(self, record):
         record_fields = {
@@ -66,7 +65,7 @@ class Logger(object):
         if handler_name in self._handlers:
 
             # log that we're removing it
-            self.info('Replacing logger output')
+            self.info_with('Replacing logger output', handler_name=handler_name)
 
             self._logger.removeHandler(self._handlers[handler_name])
 
