@@ -3,9 +3,12 @@ all:
 	$(error please pick a target)
 
 .PHONY: upload
-upload: clean
-	python setup.py sdist bdist_wheel
+upload: clean build
 	pipenv run upload
+
+.PHONY: build
+build:
+	python setup.py sdist bdist_wheel
 
 .PHONE: clean
 clean:

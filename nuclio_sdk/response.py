@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import base64
-import json
+
+import simplejson as json
 
 
 class Response(object):

@@ -14,8 +14,9 @@
 
 import base64
 import sys
-import json
 import datetime
+
+import simplejson as json
 
 
 class TriggerInfo(object):

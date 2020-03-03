@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import sys
+
+import simplejson as json
 
 # different HTTP client libraries for Python 2/3
 if sys.version_info[:2] < (3, 0):
@@ -55,37 +56,47 @@ class Platform(object):
         # this is needed to cold start a function in case it was scaled to zero
         headers['X-Nuclio-Target'] = event.headers.get('X-Nuclio-Target', function_name)
 
-        connection.request(event.method,
-                           event.path,
-                           body=body,
-                           headers=headers)
-
-        # get response from connection
-        connection_response = connection.getresponse()
-
-        # header dict
-        response_headers = {}
-
-        # get response headers as lowercase
-        for (name, value) in connection_response.getheaders():
-            response_headers[name.lower()] = value
-
-        # if content type exists, use it
-        response_content_type = response_headers.get('content-type', 'text/plain')
-
-        # read the body
-        response_body = connection_response.read()
-
-        # if content type is json, go ahead and do parsing here. if it explodes, don't blow up
-        if response_content_type == 'application/json':
-            response_body = json.loads(response_body)
-
-        response = nuclio_sdk.Response(headers=response_headers,
-                                       body=response_body,
-                                       content_type=response_content_type,
-                                       status_code=connection_response.status)
+        headers, body, status_code = self._call_function(connection, event, body, headers)
+        response = nuclio_sdk.Response(headers=headers,
+                                       body=body,
+                                       content_type=headers.get('content-type', 'text/plain'),
+                                       status_code=status_code)
 
         return response
+
+    def _call_function(self, connection, event, body, headers):
+        try:
+            connection.request(event.method,
+                               event.path,
+                               body=body,
+                               headers=headers)
+
+            # get response from connection
+            response = connection.getresponse()
+
+            # get response headers as lowercase
+            headers = {
+                name.lower(): value
+                for (name, value) in response.getheaders()
+            }
+
+            # read the body
+            body = response.read()
+
+            # if content type is json, go ahead and do parsing here. if it explodes, don't blow up
+            if headers.get('content-type') == 'application/json':
+                body = self._try_parse_json(body)
+
+            return headers, body, response.status
+
+        finally:
+            connection.close()
+
+    def _try_parse_json(self, data):
+        try:
+            return json.loads(data)
+        except:
+            return data
 
     def _get_function_url(self, function_name):
 
