@@ -14,13 +14,13 @@
 
 import sys
 
-import simplejson as json
-
 # different HTTP client libraries for Python 2/3
 if sys.version_info[:2] < (3, 0):
     from httplib import HTTPConnection
 else:
     from http.client import HTTPConnection
+
+import simplejson as json
 
 import nuclio_sdk
 
@@ -36,8 +36,23 @@ class Platform(object):
 
     def call_function(self, function_name, event, node=None, timeout=None):
 
-        # get connection from provider
-        connection = self._connection_provider(self._get_function_url(function_name), timeout=timeout)
+        # prepare the request headers / body
+        request_headers, request_body = self._prepare_request(function_name, event)
+
+        # delegate the request to callee function
+        response_headers, response_body, response_status_code = self._call_function(function_name,
+                                                                                    event,
+                                                                                    request_body,
+                                                                                    request_headers,
+                                                                                    timeout)
+
+        # return callee response to client
+        return nuclio_sdk.Response(headers=response_headers,
+                                   body=response_body,
+                                   content_type=response_headers.get('content-type', 'text/plain'),
+                                   status_code=response_status_code)
+
+    def _prepare_request(self, function_name, event):
 
         # if the user passes a dict as a body, assume json serialization. otherwise take content type from
         # body or use plain text
@@ -51,25 +66,19 @@ class Platform(object):
         # use the headers from the event or default to empty dict
         headers = event.headers or {}
         headers['Content-Type'] = content_type
-        
+
         # if no override header, use the name of the function to indicate the target
         # this is needed to cold start a function in case it was scaled to zero
         headers['X-Nuclio-Target'] = event.headers.get('X-Nuclio-Target', function_name)
+        return headers, body
 
-        headers, body, status_code = self._call_function(connection, event, body, headers)
-        response = nuclio_sdk.Response(headers=headers,
-                                       body=body,
-                                       content_type=headers.get('content-type', 'text/plain'),
-                                       status_code=status_code)
+    def _call_function(self, function_name, event, body, headers, timeout):
 
-        return response
+        # get connection from provider
+        connection = self._connection_provider(self._get_function_url(function_name), timeout=timeout)
 
-    def _call_function(self, connection, event, body, headers):
         try:
-            connection.request(event.method,
-                               event.path,
-                               body=body,
-                               headers=headers)
+            connection.request(event.method, event.path, body=body, headers=headers)
 
             # get response from connection
             response = connection.getresponse()
