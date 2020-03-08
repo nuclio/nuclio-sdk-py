@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import unittest
 import datetime
 
@@ -87,6 +88,12 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self.assertDictEqual(response, expected_response)
 
     def _compile_output_response(self, **kwargs):
+
+        # TEMP: that is a weird situation whereas all string on py2 turns into base64
+        if nuclio_sdk.helpers.PYTHON2 and 'body' in kwargs and isinstance(kwargs['body'], str):
+            kwargs['body'] = base64.b64encode(kwargs['body']).decode('ascii')
+            kwargs['body_encoding'] = 'base64'
+
         return self._merge_dicts(nuclio_sdk.Response.empty_response(), kwargs)
 
     def _merge_dicts(self, d1, d2):

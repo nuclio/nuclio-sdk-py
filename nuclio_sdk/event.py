@@ -64,7 +64,7 @@ class Event(object):
         self.type_version = type_version
         self.version = version
 
-    def to_json(self):
+    def to_json(self, encoding=None):
         obj = vars(self).copy()
         obj['trigger'] = {
             'kind': self.trigger.kind,
@@ -75,11 +75,10 @@ class Event(object):
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
-        # if body is bytes, decode to utf8
-        if nuclio_sdk.helpers.PYTHON3 and isinstance(obj['body'], bytes):
-            obj['body'] = obj['body'].decode('utf8', 'backslashreplace')
+        if isinstance(obj['body'], bytes):
+            obj['body'] = base64.b64encode(obj['body']).decode('ascii')
 
-        return nuclio_sdk.json_encoder.Encoder().encode(obj)
+        return json.dumps(obj, ensure_ascii=False)
 
     def get_header(self, header_key):
         for key, value in self.headers.items():

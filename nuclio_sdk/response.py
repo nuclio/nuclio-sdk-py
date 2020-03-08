@@ -72,12 +72,9 @@ class Response(object):
         else:
             response['body'] = handler_output
 
-        if nuclio_sdk.helpers.PYTHON3:
-
-            # irrelevant in python 2 as bytes is just an alias of str
-            if isinstance(response['body'], bytes):
-                response['body'] = base64.b64encode(response['body']).decode('ascii')
-                response['body_encoding'] = 'base64'
+        if isinstance(response['body'], bytes):
+            response['body'] = base64.b64encode(response['body']).decode('ascii')
+            response['body_encoding'] = 'base64'
 
         return response
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import nuclio_sdk.test
+import nuclio_sdk.helpers
 import nuclio_sdk.json_encoder
 
 
@@ -27,7 +28,7 @@ class TestEvent(nuclio_sdk.test.TestCase):
                                  method='GET')
         event_json = event.to_json()
         serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event['body'], 'bytes-body')
+        self.assertEqual(serialized_event['body'], 'Ynl0ZXMtYm9keQ==')
         self.assertEqual(serialized_event['content_type'], 'content-type')
         self.assertEqual(serialized_event['method'], 'GET')
         self.assertEqual(serialized_event['trigger'], {'kind': 'http', 'name': 'my-http-trigger'})
@@ -36,9 +37,10 @@ class TestEvent(nuclio_sdk.test.TestCase):
         event = nuclio_sdk.Event(body=b'\x80abc')
         event_json = event.to_json()
         serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event['body'], '\\x80abc')
+        self.assertEqual(serialized_event['body'], 'gGFiYw==')
 
     def test_event_to_json_string_body(self):
-        event = nuclio_sdk.Event(body='bytes-body')
+        event = nuclio_sdk.Event(body='str-body')
         jsonized_event = nuclio_sdk.json_encoder.json.loads(event.to_json())
-        self.assertEqual(jsonized_event['body'], 'bytes-body')
+        expected_response = 'c3RyLWJvZHk=' if nuclio_sdk.helpers.PYTHON2 else 'str-body'
+        self.assertEqual(jsonized_event['body'], expected_response)
