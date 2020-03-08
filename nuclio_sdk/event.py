@@ -135,13 +135,13 @@ class Event(object):
 
         try:
             decoded_body = base64.b64decode(body)
-        except:
+        except:  # noqa E722
             return body
 
         if content_type == 'application/json':
             try:
                 return json.loads(decoded_body)
-            except:
+            except:  # noqa E722
                 pass
 
         return decoded_body

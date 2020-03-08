@@ -14,7 +14,6 @@
 
 import unittest
 import logging
-import io
 import datetime
 
 import nuclio_sdk.test

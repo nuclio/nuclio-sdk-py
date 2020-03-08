@@ -6,7 +6,7 @@ all:
 	$(error please pick a target)
 
 .PHONY: upload
-upload: clean build
+upload: clean build lint test
 	python -m pipenv run upload
 
 .PHONY: build
@@ -28,6 +28,10 @@ flake8:
 .PHONY: test
 test:
 	python -m pipenv run test
+
+.PHONY: lint
+lint:
+	python -m pipenv run lint
 
 .PHONY: install_pipenv
 install_pipenv:
