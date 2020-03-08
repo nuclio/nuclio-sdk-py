@@ -75,10 +75,11 @@ class Event(object):
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
+        # TEMP: this should be done only on python3
         if isinstance(obj['body'], bytes):
             obj['body'] = base64.b64encode(obj['body']).decode('ascii')
 
-        return json.dumps(obj, ensure_ascii=False)
+        return json.dumps(obj)
 
     def get_header(self, header_key):
         for key, value in self.headers.items():

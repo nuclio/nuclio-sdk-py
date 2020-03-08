@@ -18,8 +18,6 @@ import nuclio_sdk.json_encoder
 
 
 class TestEvent(nuclio_sdk.test.TestCase):
-    def setUp(self):
-        pass
 
     def test_event_to_json_bytes_body(self):
         event = nuclio_sdk.Event(body=b'bytes-body',

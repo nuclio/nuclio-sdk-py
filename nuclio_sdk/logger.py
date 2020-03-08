@@ -54,8 +54,8 @@ class HumanReadableFormatter(logging.Formatter):
 
 class Logger(object):
 
-    def __init__(self, level):
-        self._logger = logging.getLogger('nuclio_sdk')
+    def __init__(self, level, name='nuclio_sdk'):
+        self._logger = logging.getLogger(name)
         self._logger.setLevel(level)
         self._bound_variables = {}
         self._handlers = {}

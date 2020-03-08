@@ -28,7 +28,7 @@ else:
 class Platform(object):
 
     def __init__(self):
-        self._logger = nuclio_sdk.Logger(logging.DEBUG)
+        self._logger = nuclio_sdk.Logger(logging.DEBUG, 'mock_platform')
         self._logger.set_handler('default', sys.stdout, nuclio_sdk.logger.HumanReadableFormatter())
 
         self._handler_contexts = {}
