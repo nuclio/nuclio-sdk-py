@@ -18,7 +18,6 @@ import logging
 import nuclio_sdk
 import nuclio_sdk.helpers
 
-# different HTTP client libraries for Python 2/3
 if nuclio_sdk.helpers.PYTHON2:
     import mock
 else:

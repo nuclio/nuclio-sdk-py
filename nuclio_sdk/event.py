@@ -17,9 +17,6 @@ import sys
 import json
 import datetime
 
-import nuclio_sdk.json_encoder
-import nuclio_sdk.helpers
-
 
 class TriggerInfo(object):
 

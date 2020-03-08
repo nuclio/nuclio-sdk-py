@@ -15,8 +15,6 @@
 import base64
 import json
 
-import nuclio_sdk.helpers
-
 
 class Response(object):
 
