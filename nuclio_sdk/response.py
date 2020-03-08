@@ -15,14 +15,16 @@
 import base64
 import json
 
+import nuclio_sdk.helpers
+
 
 class Response(object):
 
     def __init__(self, headers=None, body=None, content_type=None, status_code=200):
-        self.headers = headers
+        self.headers = headers or {}
         self.body = body
         self.status_code = status_code
-        self.content_type = content_type
+        self.content_type = content_type or 'text/plain'
 
     def __repr__(self):
         cls = self.__class__.__name__
@@ -35,13 +37,7 @@ class Response(object):
         """Given a handler output's type, generates a response towards the
         processor"""
 
-        response = {
-            'body': '',
-            'content_type': 'text/plain',
-            'headers': {},
-            'status_code': 200,
-            'body_encoding': 'text',
-        }
+        response = Response.empty_response()
 
         # if the type of the output is a string, just return that and 200
         if isinstance(handler_output, str):
@@ -76,8 +72,21 @@ class Response(object):
         else:
             response['body'] = handler_output
 
-        if isinstance(response['body'], bytes):
-            response['body'] = base64.b64encode(response['body']).decode('ascii')
-            response['body_encoding'] = 'base64'
+        if nuclio_sdk.helpers.PYTHON3:
+
+            # irrelevant in python 2 as bytes is just an alias of str
+            if isinstance(response['body'], bytes):
+                response['body'] = base64.b64encode(response['body']).decode('ascii')
+                response['body_encoding'] = 'base64'
 
         return response
+
+    @staticmethod
+    def empty_response():
+        return {
+            'body': '',
+            'content_type': 'text/plain',
+            'headers': {},
+            'status_code': 200,
+            'body_encoding': 'text',
+        }

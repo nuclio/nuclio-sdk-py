@@ -5,16 +5,17 @@ name = "pypi"
 
 [packages]
 nuclio-sdk = {editable = true,path = "."}
-requests = "*"
-twine = "*"
-bleach = "==3.1.1"
 
 [dev-packages]
 flake8 = "*"
+twine = "*"
+bleach = "==3.1.1"
 
 [requires]
 python_version = "3.7"
 
 [scripts]
+build = "python setup.py sdist bdist_wheel"
+test = "python -m unittest discover -s nuclio_sdk/test -p 'test_*.py' -v"
 upload = "twine upload dist/*"
 flake8 = "flake8 nuclio_sdk"

@@ -17,6 +17,9 @@ import sys
 import json
 import datetime
 
+import nuclio_sdk.json_encoder
+import nuclio_sdk.helpers
+
 
 class TriggerInfo(object):
 
@@ -72,7 +75,11 @@ class Event(object):
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
-        return json.dumps(obj)
+        # if body is bytes, decode to utf8
+        if nuclio_sdk.helpers.PYTHON3 and isinstance(obj['body'], bytes):
+            obj['body'] = obj['body'].decode('utf8', 'backslashreplace')
+
+        return nuclio_sdk.json_encoder.Encoder().encode(obj)
 
     def get_header(self, header_key):
         for key, value in self.headers.items():

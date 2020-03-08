@@ -66,7 +66,7 @@ class Logger(object):
         if handler_name in self._handlers:
 
             # log that we're removing it
-            self.info('Replacing logger output')
+            self.info_with('Replacing logger output', handler_name=handler_name)
 
             self._logger.removeHandler(self._handlers[handler_name])
 
