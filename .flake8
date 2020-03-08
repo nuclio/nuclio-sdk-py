@@ -1,0 +1,16 @@
+[flake8]
+
+# Ignore line too long error
+ignore = E501
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+
+per-file-ignores =
+
+    # allow top level module exposing
+    __init__.py:F401
+    test/__init__.py:F401

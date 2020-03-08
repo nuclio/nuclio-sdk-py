@@ -72,6 +72,10 @@ class Event(object):
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
+        # TEMP: this should be done only on python3
+        if isinstance(obj['body'], bytes):
+            obj['body'] = base64.b64encode(obj['body']).decode('ascii')
+
         return json.dumps(obj)
 
     def get_header(self, header_key):
@@ -131,13 +135,13 @@ class Event(object):
 
         try:
             decoded_body = base64.b64decode(body)
-        except:
+        except:  # noqa E722
             return body
 
         if content_type == 'application/json':
             try:
                 return json.loads(decoded_body)
-            except:
+            except:  # noqa E722
                 pass
 
         return decoded_body

@@ -13,15 +13,15 @@
 # limitations under the License.
 
 import json
-import sys
+
+import nuclio_sdk
+import nuclio_sdk.helpers
 
 # different HTTP client libraries for Python 2/3
-if sys.version_info[:2] < (3, 0):
+if nuclio_sdk.helpers.PYTHON2:
     from httplib import HTTPConnection
 else:
     from http.client import HTTPConnection
-
-import nuclio_sdk
 
 
 class Platform(object):

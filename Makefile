@@ -1,15 +1,21 @@
+PIPENV_PYTHON_VERSION  ?= 3.6
+
+
 .PHONY: all
 all:
 	$(error please pick a target)
 
 .PHONY: upload
-upload: clean
-	python setup.py sdist bdist_wheel
-	pipenv run upload
+upload: clean build lint test
+	python -m pipenv run upload
 
-.PHONE: clean
+.PHONY: build
+build:
+	python -m pipenv run build
+
+.PHONY: clean
 clean:
-	rm -rf dist
+	rm -rf dist build nuclio_sdk.egg-info
 
 .PHONY: clean_pyc
 clean_pyc:
@@ -17,4 +23,22 @@ clean_pyc:
 
 .PHONY: flake8
 flake8:
-	pipenv run flake8
+	python -m pipenv run flake8
+
+.PHONY: test
+test:
+	python -m pipenv run test
+
+.PHONY: lint
+lint:
+	python -m pipenv run lint
+
+.PHONY: install_pipenv
+install_pipenv:
+	python -m pip install --user pipenv
+	python -m pipenv --python ${PIPENV_PYTHON_VERSION}
+ifeq ($(PIPENV_PYTHON_VERSION), 2.7)
+	python -m pipenv install -r requirements.py2.txt
+else
+	python -m pipenv install --dev
+endif

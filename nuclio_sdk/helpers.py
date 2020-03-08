@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nuclio_sdk.test.mock_platform import Platform
-from nuclio_sdk.test.test_case import TestCase
+import sys
+
+PYTHON3 = sys.version_info[0] == 3
+PYTHON2 = sys.version_info[0] == 2
