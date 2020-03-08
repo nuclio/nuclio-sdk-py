@@ -64,7 +64,7 @@ class Event(object):
         self.type_version = type_version
         self.version = version
 
-    def to_json(self, encoding=None):
+    def to_json(self):
         obj = vars(self).copy()
         obj['trigger'] = {
             'kind': self.trigger.kind,
