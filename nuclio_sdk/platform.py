@@ -33,7 +33,7 @@ class Platform(object):
         # connection_provider is used for unit testing
         self._connection_provider = connection_provider or HTTPConnection
 
-    def call_function(self, function_name, event, node=None, timeout=60):
+    def call_function(self, function_name, event, node=None, timeout=None):
 
         # get connection from provider
         connection = self._connection_provider(self._get_function_url(function_name), timeout=timeout)
