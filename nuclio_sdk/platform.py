@@ -50,42 +50,46 @@ class Platform(object):
         # use the headers from the event or default to empty dict
         headers = event.headers or {}
         headers['Content-Type'] = content_type
-        
+
         # if no override header, use the name of the function to indicate the target
         # this is needed to cold start a function in case it was scaled to zero
         headers['X-Nuclio-Target'] = event.headers.get('X-Nuclio-Target', function_name)
 
-        connection.request(event.method,
-                           event.path,
-                           body=body,
-                           headers=headers)
+        # let http client determine that
+        headers.pop('Content-Length', None)
 
-        # get response from connection
-        connection_response = connection.getresponse()
+        try:
+            connection.request(event.method,
+                               event.path,
+                               body=body,
+                               headers=headers)
+
+            # get response from connection
+            response = connection.getresponse()
+
+            # read the body
+            response_body = response.read()
+        finally:
+            connection.close()
 
         # header dict
         response_headers = {}
 
         # get response headers as lowercase
-        for (name, value) in connection_response.getheaders():
+        for (name, value) in response.getheaders():
             response_headers[name.lower()] = value
 
         # if content type exists, use it
         response_content_type = response_headers.get('content-type', 'text/plain')
 
-        # read the body
-        response_body = connection_response.read()
-
         # if content type is json, go ahead and do parsing here. if it explodes, don't blow up
         if response_content_type == 'application/json':
             response_body = json.loads(response_body)
 
-        response = nuclio_sdk.Response(headers=response_headers,
-                                       body=response_body,
-                                       content_type=response_content_type,
-                                       status_code=connection_response.status)
-
-        return response
+        return nuclio_sdk.Response(headers=response_headers,
+                                   body=response_body,
+                                   content_type=response_content_type,
+                                   status_code=response.status)
 
     def _get_function_url(self, function_name):
 
