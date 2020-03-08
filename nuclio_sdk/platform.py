@@ -33,7 +33,7 @@ class Platform(object):
         # connection_provider is used for unit testing
         self._connection_provider = connection_provider or HTTPConnection
 
-    def call_function(self, function_name, event, node=None, timeout=None):
+    def call_function(self, function_name, event, node=None, timeout=60):
 
         # get connection from provider
         connection = self._connection_provider(self._get_function_url(function_name), timeout=timeout)
@@ -56,8 +56,7 @@ class Platform(object):
         headers['X-Nuclio-Target'] = event.headers.get('X-Nuclio-Target', function_name)
 
         # let http client determine that
-        if 'Content-Length' in headers:
-            del headers['Content-Length']
+        headers.pop('Content-Length', None)
 
         try:
             connection.request(event.method,
@@ -66,10 +65,10 @@ class Platform(object):
                                headers=headers)
 
             # get response from connection
-            connection_response = connection.getresponse()
+            response = connection.getresponse()
 
             # read the body
-            response_body = connection_response.read()
+            response_body = response.read()
         finally:
             connection.close()
 
@@ -77,7 +76,7 @@ class Platform(object):
         response_headers = {}
 
         # get response headers as lowercase
-        for (name, value) in connection_response.getheaders():
+        for (name, value) in response.getheaders():
             response_headers[name.lower()] = value
 
         # if content type exists, use it
@@ -87,12 +86,10 @@ class Platform(object):
         if response_content_type == 'application/json':
             response_body = json.loads(response_body)
 
-        response = nuclio_sdk.Response(headers=response_headers,
-                                       body=response_body,
-                                       content_type=response_content_type,
-                                       status_code=connection_response.status)
-
-        return response
+        return nuclio_sdk.Response(headers=response_headers,
+                                   body=response_body,
+                                   content_type=response_content_type,
+                                   status_code=response.status)
 
     def _get_function_url(self, function_name):
 
