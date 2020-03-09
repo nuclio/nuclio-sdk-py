@@ -38,7 +38,7 @@ install_pipenv:
 	python -m pip install --user pipenv
 	python -m pipenv --python ${PIPENV_PYTHON_VERSION}
 ifeq ($(PIPENV_PYTHON_VERSION), 2.7)
-	python -m pipenv install -r requirements.py2.txt
+	python -m pipenv install --ignore-pipfile --skip-lock --requirements requirements.py2.txt
 else
 	python -m pipenv install --dev
 endif
