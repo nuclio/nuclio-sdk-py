@@ -9,7 +9,7 @@ nuclio-sdk = {editable = true,path = "."}
 [dev-packages]
 flake8 = "*"
 twine = "*"
-bleach = "==3.1.1"
+bleach = "==3.1.4"
 
 [scripts]
 build = "python setup.py sdist bdist_wheel"
