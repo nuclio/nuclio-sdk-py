@@ -43,7 +43,9 @@ class Event(object):
                  num_shards=None,
                  _type=None,
                  type_version=None,
-                 version=None):
+                 version=None,
+                 last_in_batch=None,
+                 offset=None):
         self.body = body
         self.content_type = content_type
         self.trigger = trigger or TriggerInfo()
@@ -60,6 +62,8 @@ class Event(object):
         self.type = _type
         self.type_version = type_version
         self.version = version
+        self.last_in_batch = last_in_batch or False
+        self.offset = offset or 0
 
     def to_json(self):
         obj = vars(self).copy()
