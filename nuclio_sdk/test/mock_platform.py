@@ -48,8 +48,8 @@ class Platform(object):
 
         return handler(context, event)
 
-    def call_function(self, name, event):
-        return self._call_function_mock(name, event)
+    def call_function(self, name, event, node=None, timeout=None, service_name_override=None):
+        return self._call_function_mock(name, event, node, timeout, service_name_override)
 
     def get_call_function_call_args(self, index):
         return self._call_function_mock.call_args_list[index][0]
