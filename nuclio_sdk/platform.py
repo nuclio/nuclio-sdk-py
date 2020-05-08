@@ -94,11 +94,9 @@ class Platform(object):
 
     def _get_function_url(self, function_name, service_name_override=None):
 
-        # resolve service name for the function
-        service_name = service_name_override or 'nuclio-{0}'.format(function_name)
-
         # local envs prefix namespace
         if self.kind == 'local':
-            return '{0}-{1}:8080'.format(self.namespace, service_name)
+            service_name = service_name_override or 'nuclio-{0}-{1}'.format(self.namespace, function_name)
         else:
-            return '{0}:8080'.format(service_name)
+            service_name = service_name_override or 'nuclio-{0}'.format(function_name)
+        return '{0}:8080'.format(service_name)
