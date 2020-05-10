@@ -33,10 +33,11 @@ class Platform(object):
         # connection_provider is used for unit testing
         self._connection_provider = connection_provider or HTTPConnection
 
-    def call_function(self, function_name, event, node=None, timeout=None):
+    def call_function(self, function_name, event, node=None, timeout=None, service_name_override=None):
 
         # get connection from provider
-        connection = self._connection_provider(self._get_function_url(function_name), timeout=timeout)
+        connection = self._connection_provider(self._get_function_url(function_name, service_name_override),
+                                               timeout=timeout)
 
         # if the user passes a dict as a body, assume json serialization. otherwise take content type from
         # body or use plain text
@@ -91,10 +92,11 @@ class Platform(object):
                                    content_type=response_content_type,
                                    status_code=response.status)
 
-    def _get_function_url(self, function_name):
+    def _get_function_url(self, function_name, service_name_override=None):
 
         # local envs prefix namespace
         if self.kind == 'local':
-            return '{0}-{1}:8080'.format(self.namespace, function_name)
+            service_name = service_name_override or 'nuclio-{0}-{1}'.format(self.namespace, function_name)
         else:
-            return '{0}:8080'.format(function_name)
+            service_name = service_name_override or 'nuclio-{0}'.format(function_name)
+        return '{0}:8080'.format(service_name)

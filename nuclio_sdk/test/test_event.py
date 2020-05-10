@@ -30,6 +30,8 @@ class TestEvent(nuclio_sdk.test.TestCase):
         self.assertEqual(serialized_event['content_type'], 'content-type')
         self.assertEqual(serialized_event['method'], 'GET')
         self.assertEqual(serialized_event['trigger'], {'kind': 'http', 'name': 'my-http-trigger'})
+        self.assertEqual(serialized_event['last_in_batch'], False)
+        self.assertEqual(serialized_event['offset'], 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
         event = nuclio_sdk.Event(body=b'\x80abc')
