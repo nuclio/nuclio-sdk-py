@@ -40,7 +40,7 @@ def parse_deps():
 
 setup(
     name='nuclio_sdk',
-    version='0.1.3',
+    version='0.2.0',
     description='Client for the Nuclio serverless platform',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
