@@ -36,6 +36,7 @@ class Event(object):
                  _id=None,
                  method=None,
                  path=None,
+                 path_original=None,
                  size=None,
                  timestamp=None,
                  url=None,
@@ -54,6 +55,7 @@ class Event(object):
         self.id = _id
         self.method = method
         self.path = path or '/'
+        self.path_original = path_original or self.path
         self.size = size
         self.timestamp = timestamp or 0
         self.url = url
@@ -121,6 +123,7 @@ class Event(object):
                    _id=parsed_data['id'],
                    method=parsed_data['method'],
                    path=parsed_data['path'],
+                   path_original=parsed_data['path_original'],
                    size=parsed_data['size'],
                    timestamp=datetime.datetime.utcfromtimestamp(parsed_data['timestamp']),
                    url=parsed_data['url'],
