@@ -40,7 +40,7 @@ def parse_deps():
 
 setup(
     name='nuclio_sdk',
-    version='0.2.0',
+    version='0.3.0',
     description='Client for the Nuclio serverless platform',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -57,11 +57,10 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: MacOS',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',

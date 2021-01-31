@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import base64
-import unittest
 import datetime
 
 import nuclio_sdk.test
@@ -35,7 +34,6 @@ class TestResponse(nuclio_sdk.test.TestCase):
         expected_response = self._compile_output_response(body=2020)
         self._validate_response(handler_return, expected_response)
 
-    @unittest.skipIf(nuclio_sdk.helpers.PYTHON2, 'on py2 bytes are just an alias to str')
     def test_bytes(self):
         handler_return = b'test'
         expected_response = self._compile_output_response(body='dGVzdA==',  # base64 value for 'test'
@@ -88,21 +86,4 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self.assertDictEqual(response, expected_response)
 
     def _compile_output_response(self, **kwargs):
-
-        # TEMP: that is a weird situation whereas all string on py2 turns into base64
-        if nuclio_sdk.helpers.PYTHON2 and 'body' in kwargs and isinstance(kwargs['body'], str):
-            kwargs['body'] = base64.b64encode(kwargs['body']).decode('ascii')
-            kwargs['body_encoding'] = 'base64'
-
-        return self._merge_dicts(nuclio_sdk.Response.empty_response(), kwargs)
-
-    def _merge_dicts(self, d1, d2):
-        """
-        Creates a new dictionary d3, which is the sum of d1 and d2. d1 and d2's values remain unchanged
-
-        :return: d3 which is d1 + d2
-        """
-
-        d3 = d1.copy()
-        d3.update(d2)
-        return d3
+        return {**nuclio_sdk.Response.empty_response(), **kwargs}

@@ -1,13 +1,34 @@
 [flake8]
 
-# Ignore line too long error
-ignore = E501
+# ignore the following rules
+ignore =
 
+    # E731 do not assign a lambda expression, use a def
+    E731,
+
+    # E722 do not use bare 'except'
+    E722,
+
+    # W504 line break after binary operator (this contradicts W503)
+    W504,
+
+# no lines over 120 allowed
+max-line-length = 120
+
+# exclude these dirs
 exclude =
     .git,
     __pycache__,
     build,
     dist,
+
+# show us where we got stuff wrong
+show_source = True
+
+# include our stuff
+select = E,F,W,C,I
+
+statistics = True
 
 per-file-ignores =
 

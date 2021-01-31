@@ -40,7 +40,7 @@ class TestEvent(nuclio_sdk.test.TestCase):
         self.assertEqual(serialized_event['body'], 'gGFiYw==')
 
     def test_event_to_json_string_body(self):
-        event = nuclio_sdk.Event(body='str-body')
+        request_body = 'str-body'
+        event = nuclio_sdk.Event(body=request_body)
         jsonized_event = nuclio_sdk.json_encoder.json.loads(event.to_json())
-        expected_response = 'c3RyLWJvZHk=' if nuclio_sdk.helpers.PYTHON2 else 'str-body'
-        self.assertEqual(jsonized_event['body'], expected_response)
+        self.assertEqual(request_body, jsonized_event['body'])
