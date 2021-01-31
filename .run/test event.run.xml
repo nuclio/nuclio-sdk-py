@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="test response" type="tests" factoryName="Unittests">
+  <configuration default="false" name="test event" type="tests" factoryName="Unittests">
     <module name="nuclio-sdk-py" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -21,7 +21,7 @@
     </EXTENSION>
     <option name="_new_pattern" value="&quot;&quot;" />
     <option name="_new_additionalArguments" value="&quot;&quot;" />
-    <option name="_new_target" value="&quot;$PROJECT_DIR$/nuclio_sdk/test/test_response.py&quot;" />
+    <option name="_new_target" value="&quot;$PROJECT_DIR$/nuclio_sdk/test/test_event.py&quot;" />
     <option name="_new_targetType" value="&quot;PATH&quot;" />
     <method v="2" />
   </configuration>
