@@ -1,12 +1,14 @@
-name: CI Tests
+name: CI
 
 on:
   push:
     branches:
       - master
+      - development
   pull_request:
     branches:
       - master
+      - development
 
 jobs:
   test:
@@ -14,18 +16,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           make install_pipenv PIPENV_PYTHON_VERSION=${{ matrix.python-version }}
+
       - name: Lint
         run: make lint
+
       - name: Test
         run: make test

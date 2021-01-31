@@ -69,14 +69,13 @@ class Event(object):
         obj = vars(self).copy()
         obj['trigger'] = {
             'kind': self.trigger.kind,
-            'name': self.trigger.name
+            'name': self.trigger.name,
         }
 
         # serialize it if is a datetime object
         if isinstance(self.timestamp, datetime.datetime):
             obj['timestamp'] = str(self.timestamp)
 
-        # TEMP: this should be done only on python3
         if isinstance(obj['body'], bytes):
             obj['body'] = base64.b64encode(obj['body']).decode('ascii')
 

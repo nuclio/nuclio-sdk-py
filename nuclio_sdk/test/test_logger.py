@@ -15,19 +15,15 @@
 import unittest
 import logging
 import datetime
+import io
 
 import nuclio_sdk.test
 import nuclio_sdk.helpers
 
-if nuclio_sdk.helpers.PYTHON2:
-    from StringIO import StringIO
-else:
-    from io import StringIO
-
 
 class TestLogger(nuclio_sdk.test.TestCase):
     def setUp(self):
-        self._io = StringIO()
+        self._io = io.StringIO()
         self._logger = nuclio_sdk.Logger(logging.DEBUG, 'test_logger')
         self._logger.set_handler('default', self._io, nuclio_sdk.logger.JSONFormatter())
 

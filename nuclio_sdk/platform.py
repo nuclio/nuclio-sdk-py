@@ -13,15 +13,10 @@
 # limitations under the License.
 
 import json
+import http.client
 
 import nuclio_sdk
 import nuclio_sdk.helpers
-
-# different HTTP client libraries for Python 2/3
-if nuclio_sdk.helpers.PYTHON2:
-    from httplib import HTTPConnection
-else:
-    from http.client import HTTPConnection
 
 
 class Platform(object):
@@ -31,7 +26,7 @@ class Platform(object):
         self.namespace = namespace
 
         # connection_provider is used for unit testing
-        self._connection_provider = connection_provider or HTTPConnection
+        self._connection_provider = connection_provider or http.client.HTTPConnection
 
     def call_function(self, function_name, event, node=None, timeout=None, service_name_override=None):
 
