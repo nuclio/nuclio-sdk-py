@@ -21,49 +21,49 @@ except ImportError:
 def parse_deps():
     deps = []
     in_deps = False
-    with open('Pipfile') as fp:
+    with open("Pipfile") as fp:
         for line in fp:
             if not line.strip():
                 continue
-            elif in_deps and '[' in line:
+            elif in_deps and "[" in line:
                 return deps
-            elif line.strip() == '[packages]':
+            elif line.strip() == "[packages]":
                 in_deps = True
                 continue
             elif not in_deps:
                 continue
             else:
-                dep, version = [str.strip(val) for val in line.split('=', 1)]
+                dep, version = [str.strip(val) for val in line.split("=", 1)]
                 version = version[1:-1]  # Trim ""
-                deps.append('{}{}'.format(dep, version))
+                deps.append("{}{}".format(dep, version))
 
 
 setup(
-    name='nuclio_sdk',
-    version='0.3.0',
-    description='Client for the Nuclio serverless platform',
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    author='Eran Duchan',
-    author_email='erand@iguazio.com',
-    license='Apache 2',
-    url='https://github.com/nuclio/nuclio-sdk-py',
-    packages=['nuclio_sdk', 'nuclio_sdk.test'],
+    name="nuclio_sdk",
+    version="0.3.0",
+    description="Client for the Nuclio serverless platform",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    author="Eran Duchan",
+    author_email="erand@iguazio.com",
+    license="Apache 2",
+    url="https://github.com/nuclio/nuclio-sdk-py",
+    packages=["nuclio_sdk", "nuclio_sdk.test"],
     # install_requires=parse_deps(),
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX :: Linux',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: MacOS',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Software Development :: Libraries',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: MacOS",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Software Development :: Libraries",
     ],
-    tests_require=['pytest', 'flake8'],
+    tests_require=["pytest", "flake8"],
 )

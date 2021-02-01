@@ -24,8 +24,8 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self._encoder = nuclio_sdk.json_encoder.Encoder()
 
     def test_str(self):
-        handler_return = 'test'
-        expected_response = self._compile_output_response(body='test')
+        handler_return = "test"
+        expected_response = self._compile_output_response(body="test")
         self._validate_response(handler_return, expected_response)
 
     def test_int(self):
@@ -34,21 +34,24 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self._validate_response(handler_return, expected_response)
 
     def test_bytes(self):
-        handler_return = b'test'
-        expected_response = self._compile_output_response(body='dGVzdA==',  # base64 value for 'test'
-                                                          body_encoding='base64')
+        handler_return = b"test"
+        expected_response = self._compile_output_response(
+            body="dGVzdA==", body_encoding="base64"  # base64 value for 'test'
+        )
         self._validate_response(handler_return, expected_response)
 
     def test_dict(self):
-        handler_return = {'json': True}
-        expected_response = self._compile_output_response(body='{"json": true}',
-                                                          content_type='application/json')
+        handler_return = {"json": True}
+        expected_response = self._compile_output_response(
+            body='{"json": true}', content_type="application/json"
+        )
         self._validate_response(handler_return, expected_response)
 
     def test_iterable(self):
         handler_return = [1, 2, 3, True]
-        expected_response = self._compile_output_response(body='[1, 2, 3, true]',
-                                                          content_type='application/json')
+        expected_response = self._compile_output_response(
+            body="[1, 2, 3, true]", content_type="application/json"
+        )
         self._validate_response(handler_return, expected_response)
 
     def test_datetime(self):
@@ -57,31 +60,37 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self._validate_response(handler_return, expected_response)
 
     def test_status_code_and_str(self):
-        handler_return = (201, 'test')
-        expected_response = self._compile_output_response(body='test',
-                                                          status_code=handler_return[0])
+        handler_return = (201, "test")
+        expected_response = self._compile_output_response(
+            body="test", status_code=handler_return[0]
+        )
         self._validate_response(handler_return, expected_response)
 
     def test_status_code_and_dict(self):
-        handler_return = (201, {'json': True})
-        expected_response = self._compile_output_response(body='{"json": true}',
-                                                          status_code=handler_return[0],
-                                                          content_type='application/json')
+        handler_return = (201, {"json": True})
+        expected_response = self._compile_output_response(
+            body='{"json": true}',
+            status_code=handler_return[0],
+            content_type="application/json",
+        )
         self._validate_response(handler_return, expected_response)
 
     def test_sdk_response_str(self):
-        handler_return = nuclio_sdk.Response(body='test')
-        expected_response = self._compile_output_response(body='test')
+        handler_return = nuclio_sdk.Response(body="test")
+        expected_response = self._compile_output_response(body="test")
         self._validate_response(handler_return, expected_response)
 
     def test_sdk_response_dict(self):
-        handler_return = {'json': True}
-        expected_response = self._compile_output_response(body='{"json": true}',
-                                                          content_type='application/json')
+        handler_return = {"json": True}
+        expected_response = self._compile_output_response(
+            body='{"json": true}', content_type="application/json"
+        )
         self._validate_response(handler_return, expected_response)
 
     def _validate_response(self, handler_return, expected_response):
-        response = nuclio_sdk.Response.from_entrypoint_output(self._encoder.encode, handler_return)
+        response = nuclio_sdk.Response.from_entrypoint_output(
+            self._encoder.encode, handler_return
+        )
         self.assertDictEqual(response, expected_response)
 
     def _compile_output_response(self, **kwargs):

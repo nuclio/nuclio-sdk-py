@@ -21,14 +21,15 @@ import nuclio_sdk.helpers
 
 
 class Platform(object):
-
     def __init__(self):
-        self._logger = nuclio_sdk.Logger(logging.DEBUG, 'mock_platform')
-        self._logger.set_handler('default', sys.stdout, nuclio_sdk.logger.HumanReadableFormatter())
+        self._logger = nuclio_sdk.Logger(logging.DEBUG, "mock_platform")
+        self._logger.set_handler(
+            "default", sys.stdout, nuclio_sdk.logger.HumanReadableFormatter()
+        )
 
         self._handler_contexts = {}
         self._call_function_mock = unittest.mock.MagicMock()
-        self._kind = 'test'
+        self._kind = "test"
 
         # for tests that need a context
         self._context = nuclio_sdk.Context(self._logger, self)
@@ -44,8 +45,12 @@ class Platform(object):
 
         return handler(context, event)
 
-    def call_function(self, name, event, node=None, timeout=None, service_name_override=None):
-        return self._call_function_mock(name, event, node, timeout, service_name_override)
+    def call_function(
+        self, name, event, node=None, timeout=None, service_name_override=None
+    ):
+        return self._call_function_mock(
+            name, event, node, timeout, service_name_override
+        )
 
     def get_call_function_call_args(self, index):
         return self._call_function_mock.call_args_list[index][0]
@@ -73,11 +78,11 @@ class Platform(object):
             # get handler module
             handler_module = sys.modules[handler.__module__]
 
-            self._logger.info_with('Calling handler init context', handler=str(handler))
+            self._logger.info_with("Calling handler init context", handler=str(handler))
 
             # call init context
-            if hasattr(handler_module, 'init_context'):
-                getattr(handler_module, 'init_context')(context)
+            if hasattr(handler_module, "init_context"):
+                getattr(handler_module, "init_context")(context)
 
             # save context and return it
             self._handler_contexts[handler] = context

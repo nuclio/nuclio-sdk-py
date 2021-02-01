@@ -24,24 +24,24 @@ import nuclio_sdk.helpers
 class TestLogger(nuclio_sdk.test.TestCase):
     def setUp(self):
         self._io = io.StringIO()
-        self._logger = nuclio_sdk.Logger(logging.DEBUG, 'test_logger')
-        self._logger.set_handler('default', self._io, nuclio_sdk.logger.JSONFormatter())
+        self._logger = nuclio_sdk.Logger(logging.DEBUG, "test_logger")
+        self._logger.set_handler("default", self._io, nuclio_sdk.logger.JSONFormatter())
 
     def test_log_text(self):
         """
         message only log line is printed
         """
 
-        self._logger.debug('TestA')
-        self.assertIn('TestA', self._io.getvalue())
+        self._logger.debug("TestA")
+        self.assertIn("TestA", self._io.getvalue())
 
     def test_log_with_char(self):
         """
         log line with text kwarg
         """
 
-        self._logger.debug_with('TestB', char='a')
-        self.assertIn('TestB', self._io.getvalue())
+        self._logger.debug_with("TestB", char="a")
+        self.assertIn("TestB", self._io.getvalue())
         self.assertIn('"with": {"char": "a"}', self._io.getvalue())
 
     def test_log_with_number(self):
@@ -49,17 +49,17 @@ class TestLogger(nuclio_sdk.test.TestCase):
         log line with int kwarg
         """
 
-        self._logger.debug_with('TestC', number=1)
-        self.assertIn('TestC', self._io.getvalue())
+        self._logger.debug_with("TestC", number=1)
+        self.assertIn("TestC", self._io.getvalue())
         self.assertIn('"with": {"number": 1}', self._io.getvalue())
 
-    @unittest.skip('currently unsupported')
+    @unittest.skip("currently unsupported")
     def test_log_with_date(self):
         """
         log line with datetime kwarg
         """
 
-        date = datetime.datetime.strptime('Oct 1 2020', '%b %d %Y')
-        self._logger.debug_with('TestD', date=date)
-        self.assertIn('TestD', self._io.getvalue())
+        date = datetime.datetime.strptime("Oct 1 2020", "%b %d %Y")
+        self._logger.debug_with("TestD", date=date)
+        self.assertIn("TestD", self._io.getvalue())
         self.assertIn('"with": {"date": "2020-10-01T00:00:00"}', self._io.getvalue())

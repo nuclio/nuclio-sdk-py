@@ -25,10 +25,14 @@ clean_pyc:
 clean_all: clean clean_pyc
 	@echo "Done cleaning"
 
+.PHONY: fmt
+fmt:
+	python -m pipenv run fmt
+
 .PHONY: lint
 lint:
-	python -m pipenv run lint
 	python -m pipenv run flake8
+	python -m pipenv run lint
 
 .PHONY: test
 test:

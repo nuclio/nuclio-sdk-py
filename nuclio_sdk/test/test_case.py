@@ -20,11 +20,10 @@ import nuclio_sdk.test
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         self._platform = nuclio_sdk.test.Platform()
         self._environ_copy = copy.copy(os.environ)
 
     def tearDown(self):
-        if hasattr(self, '_environ_copy'):
+        if hasattr(self, "_environ_copy"):
             os.environ = self._environ_copy
