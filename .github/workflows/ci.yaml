@@ -1,10 +1,10 @@
 name: CI
 
 on:
-#  push:
-#    branches:
-#      - master
-#      - development
+  push:
+    branches:
+      - master
+      - development
   pull_request:
     branches:
       - master
@@ -80,7 +80,19 @@ jobs:
       - name: Set function name
         run: |
           function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
+
+          # if pull request, else push
+          if [ "${{ github.event_name }}" == "pull_request" ]; then\
+            actor=${{ github.actor }};\
+            branch=${{ github.head_ref }};\
+          else\
+            actor=${{ github.repository_owner }};\
+            branch=${GITHUB_REF#refs/heads/};\
+          fi
+
           echo "FUNCTION_NAME=$function_name" >> $GITHUB_ENV
+          echo "ACTOR=$actor" >> $GITHUB_ENV
+          echo "BRANCH=$branch" >> $GITHUB_ENV
 
       - name: Render CI function yaml
         run: |
@@ -89,9 +101,9 @@ jobs:
             tee $(pwd)/hack/ci_assets/function/function.yaml
         working-directory: nuclio-sdk-py
         env:
+          REPO_USER: ${{ env.ACTOR }}
+          REPO_BRANCH: ${{ env.BRANCH }}
           FUNCTION_NAME: ${{ env.FUNCTION_NAME }}
-          REPO_USER: ${{ github.actor }}
-          REPO_BRANCH: ${{ github.head_ref }}
           FUNCTION_RUNTIME: python:${{ matrix.python_version }}
 
       - uses: actions/setup-go@v2
