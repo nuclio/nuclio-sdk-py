@@ -17,18 +17,17 @@ import json
 
 
 class Response(object):
-
     def __init__(self, headers=None, body=None, content_type=None, status_code=200):
         self.headers = headers or {}
         self.body = body
         self.status_code = status_code
-        self.content_type = content_type or 'text/plain'
+        self.content_type = content_type or "text/plain"
 
     def __repr__(self):
         cls = self.__class__.__name__
         items = self.__dict__.items()
-        args = ('{}={!r}'.format(key, value) for key, value in items)
-        return '{}({})'.format(cls, ', '.join(args))
+        args = ("{}={!r}".format(key, value) for key, value in items)
+        return "{}({})".format(cls, ", ".join(args))
 
     @staticmethod
     def from_entrypoint_output(json_encoder, handler_output):
@@ -39,49 +38,49 @@ class Response(object):
 
         # if the type of the output is a string, just return that and 200
         if isinstance(handler_output, str):
-            response['body'] = handler_output
+            response["body"] = handler_output
 
         # if it's a tuple of 2 elements, first is status second is body
         elif isinstance(handler_output, tuple) and len(handler_output) == 2:
-            response['status_code'] = handler_output[0]
+            response["status_code"] = handler_output[0]
 
             if isinstance(handler_output[1], str):
-                response['body'] = handler_output[1]
+                response["body"] = handler_output[1]
             else:
-                response['body'] = json_encoder(handler_output[1])
-                response['content_type'] = 'application/json'
+                response["body"] = json_encoder(handler_output[1])
+                response["content_type"] = "application/json"
 
         # if it's a dict, populate the response and set content type to json
         elif isinstance(handler_output, dict) or isinstance(handler_output, list):
-            response['content_type'] = 'application/json'
-            response['body'] = json_encoder(handler_output)
+            response["content_type"] = "application/json"
+            response["body"] = json_encoder(handler_output)
 
         # if it's a response object, populate the response
         elif isinstance(handler_output, Response):
             if isinstance(handler_output.body, dict):
-                response['body'] = json.dumps(handler_output.body)
-                response['content_type'] = 'application/json'
+                response["body"] = json.dumps(handler_output.body)
+                response["content_type"] = "application/json"
             else:
-                response['body'] = handler_output.body
-                response['content_type'] = handler_output.content_type
+                response["body"] = handler_output.body
+                response["content_type"] = handler_output.content_type
 
-            response['headers'] = handler_output.headers
-            response['status_code'] = handler_output.status_code
+            response["headers"] = handler_output.headers
+            response["status_code"] = handler_output.status_code
         else:
-            response['body'] = handler_output
+            response["body"] = handler_output
 
-        if isinstance(response['body'], bytes):
-            response['body'] = base64.b64encode(response['body']).decode('ascii')
-            response['body_encoding'] = 'base64'
+        if isinstance(response["body"], bytes):
+            response["body"] = base64.b64encode(response["body"]).decode("ascii")
+            response["body_encoding"] = "base64"
 
         return response
 
     @staticmethod
     def empty_response():
         return {
-            'body': '',
-            'content_type': 'text/plain',
-            'headers': {},
-            'status_code': 200,
-            'body_encoding': 'text',
+            "body": "",
+            "content_type": "text/plain",
+            "headers": {},
+            "status_code": 200,
+            "body_encoding": "text",
         }

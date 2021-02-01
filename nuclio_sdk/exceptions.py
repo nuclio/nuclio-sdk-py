@@ -14,7 +14,6 @@
 
 
 class ExceptionWithResponse(IOError):
-
     def __init__(self, status_code, body=None, content_type=None):
         self._status_code = status_code
         self._body = body

@@ -15,9 +15,8 @@
 import json
 
 
+# JSON encoder that can encode custom stuff
 class Encoder(json.JSONEncoder):
-
-    """JSON encoder that can encode custom stuff"""
     def default(self, obj):
 
         # Let the base class default method raise the TypeError

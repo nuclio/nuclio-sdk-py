@@ -17,9 +17,8 @@ import nuclio_sdk.event
 
 
 class Context(object):
-
     def __init__(self, logger=None, platform=None, worker_id=None, trigger=None):
-        self.platform = platform or nuclio_sdk.Platform('test')
+        self.platform = platform or nuclio_sdk.Platform("test")
         self.logger = logger
         self.user_data = lambda: None
         self.Response = nuclio_sdk.Response

@@ -20,12 +20,14 @@ import nuclio_sdk
 
 def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
     context.logger.debug_with("Received request", event=event.to_json())
-    return context.Response(headers=event.headers,
-                            body={
-                                'sdk_version': get_sdk_version(),
-                            },
-                            content_type=event.content_type,
-                            status_code=http.HTTPStatus.OK)
+    return context.Response(
+        headers=event.headers,
+        body={
+            "sdk_version": get_sdk_version(),
+        },
+        content_type=event.content_type,
+        status_code=http.HTTPStatus.OK,
+    )
 
 
 def get_sdk_version():

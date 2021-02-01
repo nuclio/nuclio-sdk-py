@@ -18,29 +18,32 @@ import nuclio_sdk.json_encoder
 
 
 class TestEvent(nuclio_sdk.test.TestCase):
-
     def test_event_to_json_bytes_body(self):
-        event = nuclio_sdk.Event(body=b'bytes-body',
-                                 content_type='content-type',
-                                 trigger=nuclio_sdk.TriggerInfo(kind='http', name='my-http-trigger'),
-                                 method='GET')
+        event = nuclio_sdk.Event(
+            body=b"bytes-body",
+            content_type="content-type",
+            trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+            method="GET",
+        )
         event_json = event.to_json()
         serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event['body'], 'Ynl0ZXMtYm9keQ==')
-        self.assertEqual(serialized_event['content_type'], 'content-type')
-        self.assertEqual(serialized_event['method'], 'GET')
-        self.assertEqual(serialized_event['trigger'], {'kind': 'http', 'name': 'my-http-trigger'})
-        self.assertEqual(serialized_event['last_in_batch'], False)
-        self.assertEqual(serialized_event['offset'], 0)
+        self.assertEqual(serialized_event["body"], "Ynl0ZXMtYm9keQ==")
+        self.assertEqual(serialized_event["content_type"], "content-type")
+        self.assertEqual(serialized_event["method"], "GET")
+        self.assertEqual(
+            serialized_event["trigger"], {"kind": "http", "name": "my-http-trigger"}
+        )
+        self.assertEqual(serialized_event["last_in_batch"], False)
+        self.assertEqual(serialized_event["offset"], 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
-        event = nuclio_sdk.Event(body=b'\x80abc')
+        event = nuclio_sdk.Event(body=b"\x80abc")
         event_json = event.to_json()
         serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event['body'], 'gGFiYw==')
+        self.assertEqual(serialized_event["body"], "gGFiYw==")
 
     def test_event_to_json_string_body(self):
-        request_body = 'str-body'
+        request_body = "str-body"
         event = nuclio_sdk.Event(body=request_body)
         jsonized_event = nuclio_sdk.json_encoder.json.loads(event.to_json())
-        self.assertEqual(request_body, jsonized_event['body'])
+        self.assertEqual(request_body, jsonized_event["body"])

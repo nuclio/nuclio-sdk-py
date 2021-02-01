@@ -14,6 +14,34 @@ env:
   NUCLIO_LABEL: unstable
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Dump runner context
+        run: echo "$RUNNER_CONTEXT"
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          make install_pipenv
+
+      - name: Lint
+        run: make lint
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -41,9 +69,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           make install_pipenv PIPENV_PYTHON_VERSION=${{ matrix.python_version }}
-
-      - name: Lint
-        run: make lint
 
       - name: Test
         run: make test

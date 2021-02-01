@@ -25,36 +25,36 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record):
         record_fields = {
-            'datetime': self.formatTime(record, self.datefmt),
-            'level': record.levelname.lower(),
-            'message': record.getMessage(),
-            'with': getattr(record, 'with', {}),
+            "datetime": self.formatTime(record, self.datefmt),
+            "level": record.levelname.lower(),
+            "message": record.getMessage(),
+            "with": getattr(record, "with", {}),
         }
 
-        return 'l' + self._json_encoder.encode(record_fields)
+        return "l" + self._json_encoder.encode(record_fields)
 
 
 class HumanReadableFormatter(logging.Formatter):
-
     def __init__(self):
         super(HumanReadableFormatter, self).__init__()
 
     def format(self, record):
-        record_with = getattr(record, 'with', {})
+        record_with = getattr(record, "with", {})
         if record_with:
-            more = ': {0}'.format(record_with)
+            more = ": {0}".format(record_with)
         else:
-            more = ''
+            more = ""
 
-        return 'Python> {0} [{1}] {2}{3}'.format(self.formatTime(record, self.datefmt),
-                                                 record.levelname.lower(),
-                                                 record.getMessage(),
-                                                 more)
+        return "Python> {0} [{1}] {2}{3}".format(
+            self.formatTime(record, self.datefmt),
+            record.levelname.lower(),
+            record.getMessage(),
+            more,
+        )
 
 
 class Logger(object):
-
-    def __init__(self, level, name='nuclio_sdk'):
+    def __init__(self, level, name="nuclio_sdk"):
         self._logger = logging.getLogger(name)
         self._logger.setLevel(level)
         self._bound_variables = {}
@@ -66,7 +66,7 @@ class Logger(object):
         if handler_name in self._handlers:
 
             # log that we're removing it
-            self.info_with('Replacing logger output', handler_name=handler_name)
+            self.info_with("Replacing logger output", handler_name=handler_name)
 
             self._logger.removeHandler(self._handlers[handler_name])
 
@@ -113,7 +113,7 @@ class Logger(object):
         kw_args.update(self._bound_variables)
 
         if len(kw_args) != 0:
-            self._logger._log(level, message, args, extra={'with': kw_args})
+            self._logger._log(level, message, args, extra={"with": kw_args})
             return
 
         self._logger._log(level, message, args)
