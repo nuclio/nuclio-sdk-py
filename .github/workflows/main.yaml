@@ -13,11 +13,11 @@ env:
 
 jobs:
   unit:
-    runs-on: ubuntu-latest
     name: Unit test (Python ${{ matrix.python_version }})
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8]
+        python-version: [ 2.7, 3.6, 3.7, 3.8 ]
     steps:
       - name: Dump github context
         run: echo "$GITHUB_CONTEXT"
@@ -53,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [2.7, 3.6]
+        python-version: [ 2.7, 3.6 ]
     steps:
       - name: Dump github context
         run: echo "$GITHUB_CONTEXT"
@@ -78,7 +78,18 @@ jobs:
           path: nuclio
           token: ${{ github.token }}
 
-      - name: Set function name
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.14.0"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set runtime env
         run: |
           function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
 
@@ -94,33 +105,6 @@ jobs:
           echo "FUNCTION_NAME=$function_name" >> $GITHUB_ENV
           echo "ACTOR=$actor" >> $GITHUB_ENV
           echo "BRANCH=$branch" >> $GITHUB_ENV
-
-      - name: Render CI function yaml
-        run: |
-          cat $(pwd)/hack/ci_assets/function/function.yaml | \
-            envsubst | \
-            tee $(pwd)/hack/ci_assets/function/function.yaml
-
-          # show rendered
-          cat $(pwd)/hack/ci_assets/function/function.yaml
-        working-directory: nuclio-sdk-py
-        shell: bash
-        env:
-          REPO_USER: ${{ env.ACTOR }}
-          REPO_BRANCH: ${{ env.BRANCH }}
-          FUNCTION_NAME: ${{ env.FUNCTION_NAME }}
-          FUNCTION_RUNTIME: python:${{ matrix.python_version }}
-
-      - uses: actions/setup-go@v2
-        with:
-          go-version: "^1.14.0"
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
 
       - name: Build nuctl
         run: make nuctl-bin
@@ -141,16 +125,19 @@ jobs:
         run: |
           nuctl deploy $FUNCTION_NAME \
             --verbose \
-            --path $(pwd)/hack/ci_assets/function \
-            --file $(pwd)/hack/ci_assets/function/function.yaml
+            --runtime python:${{ matrix.python_version }} \
+            --handler main:handler \
+            --build-command "@nuclio.postCopy" \
+            --build-command "pip install git+https://github.com/$ACTOR/nuclio-sdk-py.git@$BRANCH" \
+            --path $(pwd)/hack/ci_assets/function/main.py
         working-directory: nuclio-sdk-py
         env:
           NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE: volume
 
-      - name: Invoke
+      - name: Invoke function
         run: |
           nuctl invoke $FUNCTION_NAME
 
-      - name: Print function logs
+      - name: Print function container logs
         run: |
           docker logs nuclio-nuclio-$FUNCTION_NAME
