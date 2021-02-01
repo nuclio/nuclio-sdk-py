@@ -42,7 +42,8 @@ jobs:
       - name: Lint
         run: make lint
 
-  test:
+  unit:
+    name: Unit test (Python ${{ matrix.python_version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -74,6 +75,7 @@ jobs:
         run: make test
 
   integration:
+    name: Integration test (Python ${{ matrix.python_version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -103,7 +105,7 @@ jobs:
           path: nuclio
           token: ${{ github.token }}
 
-      - name: Set function name
+      - name: Set runtime env
         run: |
           function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
 
@@ -122,12 +124,7 @@ jobs:
 
       - name: Render CI function yaml
         run: |
-          cat $(pwd)/hack/ci_assets/function/function.yaml | \
-            envsubst | \
-            tee $(pwd)/hack/ci_assets/function/function.yaml
-
-          # show rendered
-          cat $(pwd)/hack/ci_assets/function/function.yaml
+          cat $(pwd)/hack/ci_assets/function/function.yaml | envsubst | tee $(pwd)/hack/ci_assets/function/function.yaml
         working-directory: nuclio-sdk-py
         shell: bash
         env:
