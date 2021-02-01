@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pkg_resources
 import http
 
 import nuclio_sdk
@@ -20,6 +21,12 @@ import nuclio_sdk
 def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
     context.logger.debug_with("Received request", event=event.to_json())
     return context.Response(headers=event.headers,
-                            body=event.body,
+                            body={
+                                'sdk_version': get_sdk_version(),
+                            },
                             content_type=event.content_type,
                             status_code=http.HTTPStatus.OK)
+
+
+def get_sdk_version():
+    return pkg_resources.get_distribution("nuclio_sdk").version
