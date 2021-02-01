@@ -124,6 +124,9 @@ jobs:
           cat $(pwd)/hack/ci_assets/function/function.yaml | \
             envsubst | \
             tee $(pwd)/hack/ci_assets/function/function.yaml
+
+          # show rendered
+          cat $(pwd)/hack/ci_assets/function/function.yaml
         working-directory: nuclio-sdk-py
         env:
           REPO_USER: ${{ env.ACTOR }}
