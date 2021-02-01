@@ -1,0 +1,8 @@
+spec:
+  handler: main:handler
+  runtime: $FUNCTION_RUNTIME
+  description: Tests nuclio python sdk for CI
+  build:
+    commands:
+      - "@nuclio.postCopy"
+      - "pip install git+https://github.com/$REPO_USER/nuclio-sdk-py.git@$REPO_BRANCH"

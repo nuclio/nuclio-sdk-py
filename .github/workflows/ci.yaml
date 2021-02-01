@@ -1,23 +1,35 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - master
-      - development
+#  push:
+#    branches:
+#      - master
+#      - development
   pull_request:
     branches:
       - master
       - development
 
+env:
+  NUCLIO_LABEL: unstable
+
 jobs:
   test:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
     steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Dump runner context
+        run: echo "$RUNNER_CONTEXT"
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+
       - uses: actions/checkout@v2
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -35,3 +47,82 @@ jobs:
 
       - name: Test
         run: make test
+
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: [ 3.8 ]
+    steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Dump runner context
+        run: echo "$RUNNER_CONTEXT"
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+
+      - name: Clone Nuclio sdk py
+        uses: actions/checkout@v2
+        with:
+          path: nuclio-sdk-py
+
+      - name: Clone Nuclio
+        uses: actions/checkout@v2
+        with:
+          repository: nuclio/nuclio
+          ref: development
+          path: nuclio
+          token: ${{ github.token }}
+
+      - name: Render CI function yaml
+        run: |
+          cat $(pwd)/hack/ci_assets/function/function.yaml | \
+            envsubst | \
+            tee $(pwd)/hack/ci_assets/function/function.yaml
+        working-directory: nuclio-sdk-py
+        env:
+          REPO_USER: ${{ github.actor }}
+          REPO_BRANCH: ${{ github.head_ref }}
+          FUNCTION_RUNTIME: python:${{ matrix.python_version }}
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.14.0"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build nuctl
+        run: |
+          CGO_ENABLED=0 \
+            go build -a -installsuffix cgo -ldflags="-s -w -X github.com/v3io/version-go.gitCommit= -X github.com/v3io/version-go.label=unstable -X github.com/v3io/version-go.arch=amd64" -o $GOPATH/bin/nuctl-unstable-linux-amd64 cmd/nuctl/main.go
+        working-directory: nuclio
+
+      - name: Install nuctl
+        run: |
+          cp $GOPATH/bin/nuctl-$NUCLIO_LABEL-linux-amd64 ./nuctl
+          sudo -EH install nuctl /usr/local/bin
+
+          # print version for sanity
+          nuctl version
+        working-directory: nuclio
+
+      - name: Deploy function
+        run: |
+          nuctl deploy sdk-py-func-${{ matrix.python_version }} \
+            --verbose \
+            --path $(pwd)/hack/ci_assets/function \
+            --file $(pwd)/hack/ci_assets/function/function.yaml
+
+        working-directory: nuclio-sdk-py
+
+      - name: Invoke
+        run: |
+          nuctl invoke
