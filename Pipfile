@@ -9,7 +9,7 @@ nuclio-sdk = { editable = true, path = "." }
 [dev-packages]
 flake8 = "*"
 twine = "*"
-bleach = "==3.1.4"
+bleach = "==3.3.0"
 black = "==20.8b1"
 
 [scripts]
