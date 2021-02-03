@@ -91,8 +91,8 @@ class Event(object):
         """Decode msgpack event encoded as JSON by processor"""
 
         # extract content type, needed to decode body
-        content_type = parsed_data["content_type"]
-        body = Event.decode_msgpack_body(parsed_data["body"], content_type)
+        content_type = parsed_data[b"content_type"]
+        body = Event.decode_msgpack_body(parsed_data[b"body"], content_type)
         return Event.from_parsed_data(parsed_data, body, content_type)
 
     @staticmethod
@@ -109,25 +109,25 @@ class Event(object):
     @classmethod
     def from_parsed_data(cls, parsed_data, body, content_type):
         trigger = TriggerInfo(
-            parsed_data["trigger"]["kind"], parsed_data["trigger"]["name"]
+            parsed_data[b"trigger"][b"kind"], parsed_data[b"trigger"][b"name"]
         )
         return cls(
             body=body,
             content_type=content_type,
             trigger=trigger,
-            fields=parsed_data.get("fields"),
-            headers=parsed_data.get("headers"),
-            _id=parsed_data["id"],
-            method=parsed_data["method"],
-            path=parsed_data["path"],
-            size=parsed_data["size"],
-            timestamp=datetime.datetime.utcfromtimestamp(parsed_data["timestamp"]),
-            url=parsed_data["url"],
-            shard_id=parsed_data["shard_id"],
-            num_shards=parsed_data["num_shards"],
-            _type=parsed_data["type"],
-            type_version=parsed_data["type_version"],
-            version=parsed_data["version"],
+            fields=parsed_data[b"fields"],
+            headers=parsed_data[b"headers"],
+            _id=parsed_data[b"id"],
+            method=parsed_data[b"method"],
+            path=parsed_data[b"path"],
+            size=parsed_data[b"size"],
+            timestamp=datetime.datetime.utcfromtimestamp(parsed_data[b"timestamp"]),
+            url=parsed_data[b"url"],
+            shard_id=parsed_data[b"shard_id"],
+            num_shards=parsed_data[b"num_shards"],
+            _type=parsed_data[b"type"],
+            type_version=parsed_data[b"type_version"],
+            version=parsed_data[b"version"],
         )
 
     @staticmethod
