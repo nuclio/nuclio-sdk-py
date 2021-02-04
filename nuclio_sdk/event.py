@@ -189,7 +189,7 @@ class _EventSerializerMsgPack(EventSerializer):
     def _from_msgpack_decoded(self, parsed_data):
         content_type = parsed_data["content_type"]
         body = self._decode_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data_bytes(parsed_data, body, content_type)
+        return Event.from_parsed_data(parsed_data, body, content_type)
 
     def _decode_body(self, body, content_type):
         if content_type == "application/json":
