@@ -88,26 +88,46 @@ class Event(object):
 
     @staticmethod
     def from_msgpack(parsed_data):
-        """Decode msgpack event encoded as JSON by processor"""
-
-        # extract content type, needed to decode body
-        content_type = parsed_data[b"content_type"]
-        body = Event.decode_msgpack_body(parsed_data[b"body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+        """
+        Deprecated. use nuclio_sdk.event.EventSerializerFactory.create("msgpack").serialize(parsed_data) instead.
+        To be removed on >= 0.4.0
+        """
+        return EventSerializerFactory.create("msgpack").serialize(parsed_data)
 
     @staticmethod
     def from_json(data):
-        """Decode event encoded as JSON by processor"""
-
-        parsed_data = json.loads(data)
-
-        # extract content type, needed to decode body
-        content_type = parsed_data["content_type"]
-        body = Event.decode_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+        """
+        Deprecated. use nuclio_sdk.event.EventSerializerFactory.create("json").serialize(data) instead.
+        To be removed on >= 0.4.0
+        """
+        return EventSerializerFactory.create("json").serialize(data)
 
     @classmethod
     def from_parsed_data(cls, parsed_data, body, content_type):
+        trigger = TriggerInfo(
+            parsed_data["trigger"]["kind"], parsed_data["trigger"]["name"]
+        )
+        return cls(
+            body=body,
+            content_type=content_type,
+            trigger=trigger,
+            fields=parsed_data["fields"],
+            headers=parsed_data["headers"],
+            _id=parsed_data["id"],
+            method=parsed_data["method"],
+            path=parsed_data["path"],
+            size=parsed_data["size"],
+            timestamp=datetime.datetime.utcfromtimestamp(parsed_data["timestamp"]),
+            url=parsed_data["url"],
+            shard_id=parsed_data["shard_id"],
+            num_shards=parsed_data["num_shards"],
+            _type=parsed_data["type"],
+            type_version=parsed_data["type_version"],
+            version=parsed_data["version"],
+        )
+
+    @classmethod
+    def from_parsed_data_bytes(cls, parsed_data, body, content_type):
         trigger = TriggerInfo(
             parsed_data[b"trigger"][b"kind"], parsed_data[b"trigger"][b"name"]
         )
@@ -130,10 +150,67 @@ class Event(object):
             version=parsed_data[b"version"],
         )
 
-    @staticmethod
-    def decode_body(body, content_type):
-        """Decode event body"""
+    def __repr__(self):
+        return self.to_json()
 
+
+class EventSerializer(object):
+    def serialize(self, event_message) -> Event:
+        raise NotImplementedError
+
+
+class EventSerializerFactory(object):
+    @staticmethod
+    def create(serializer_kind, runtime_version="3.6") -> EventSerializer:
+        if serializer_kind == "msgpack":
+            return _EventSerializerMsgPack(raw=runtime_version != "3.6")
+        if serializer_kind == "json":
+            return _EventSerializerJSON()
+        raise RuntimeError(f"No such serializer kind {serializer_kind}")
+
+
+class _EventSerializerMsgPack(EventSerializer):
+    def __init__(self, raw=False):
+
+        # return the concrete function that handled raw/decoded event messages
+        # pre-assign to avoid if/else during event processing
+        self._from_msgpack_handler = (
+            self._from_msgpack_raw if raw else self._from_msgpack_decoded
+        )
+
+    def serialize(self, event_message):
+        return self._from_msgpack_handler(event_message)
+
+    def _from_msgpack_raw(self, parsed_data):
+        content_type = parsed_data[b"content_type"]
+        body = self._decode_body(parsed_data[b"body"], content_type)
+        return Event.from_parsed_data_bytes(parsed_data, body, content_type)
+
+    def _from_msgpack_decoded(self, parsed_data):
+        content_type = parsed_data["content_type"]
+        body = self._decode_body(parsed_data["body"], content_type)
+        return Event.from_parsed_data_bytes(parsed_data, body, content_type)
+
+    def _decode_body(self, body, content_type):
+        if content_type == "application/json":
+            try:
+                return json.loads(body.decode("utf-8"))
+            except Exception as exc:
+                sys.stderr.write(str(exc))
+
+        return body
+
+
+class _EventSerializerJSON(EventSerializer):
+    def serialize(self, event_message):
+        parsed_data = json.loads(event_message)
+
+        # extract content type, needed to decode body
+        content_type = parsed_data["content_type"]
+        body = self._decode_body(parsed_data["body"], content_type)
+        return Event.from_parsed_data(parsed_data, body, content_type)
+
+    def _decode_body(self, body, content_type):
         if isinstance(body, dict):
             return body
 
@@ -149,18 +226,3 @@ class Event(object):
                 pass
 
         return decoded_body
-
-    @staticmethod
-    def decode_msgpack_body(body, content_type):
-        """Decode msgpack event body"""
-
-        if content_type == "application/json":
-            try:
-                return json.loads(body.decode("utf-8"))
-            except Exception as exc:
-                sys.stderr.write(str(exc))
-
-        return body
-
-    def __repr__(self):
-        return self.to_json()

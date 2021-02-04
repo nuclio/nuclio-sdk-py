@@ -12,12 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+import json
+
 import nuclio_sdk.test
 import nuclio_sdk.helpers
 import nuclio_sdk.json_encoder
 
 
 class TestEvent(nuclio_sdk.test.TestCase):
+    def setUp(self):
+        self._runtime_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
     def test_event_to_json_bytes_body(self):
         event = nuclio_sdk.Event(
             body=b"bytes-body",
@@ -47,3 +53,32 @@ class TestEvent(nuclio_sdk.test.TestCase):
         event = nuclio_sdk.Event(body=request_body)
         jsonized_event = nuclio_sdk.json_encoder.json.loads(event.to_json())
         self.assertEqual(request_body, jsonized_event["body"])
+
+    def test_msgpack_serializer(self):
+        event = nuclio_sdk.Event(
+            body="some-body",
+            content_type="content-type",
+            trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+            method="GET",
+        )
+
+        event_json = {k: v for k, v in json.loads(event.to_json()).items()}
+
+        # encode dict keys for python > 3.6 (as nuclio uses msgpack with runtime > 3.6)
+        if self._runtime_version != "3.6":
+            self._event_keys_to_byte_string(event_json)
+
+        msgpack_event_serializer = nuclio_sdk.EventSerializerFactory.create(
+            "msgpack", runtime_version=self._runtime_version
+        )
+        serialized_event = msgpack_event_serializer.serialize(event_json)
+        self.assertEqual(event.body, serialized_event.body)
+        self.assertEqual(event.trigger.kind, serialized_event.trigger.kind)
+
+    def _event_keys_to_byte_string(self, d):
+        for k, v in list(d.items()):
+            if isinstance(k, str):
+                d[k.encode()] = v
+                del d[k]
+            if isinstance(v, dict):
+                self._event_keys_to_byte_string(v)
