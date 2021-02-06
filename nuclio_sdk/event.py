@@ -161,9 +161,11 @@ class EventSerializer(object):
 
 class EventSerializerFactory(object):
     @staticmethod
-    def create(serializer_kind, runtime_version="3.6") -> EventSerializer:
+    def create(serializer_kind) -> EventSerializer:
         if serializer_kind == "msgpack":
-            return _EventSerializerMsgPack(raw=runtime_version != "3.6")
+            return _EventSerializerMsgPack(raw=False)
+        if serializer_kind == "msgpack_raw":
+            return _EventSerializerMsgPack(raw=True)
         if serializer_kind == "json":
             return _EventSerializerJSON()
         raise RuntimeError(f"No such serializer kind {serializer_kind}")
@@ -178,7 +180,7 @@ class _EventSerializerMsgPack(EventSerializer):
             self._from_msgpack_raw if raw else self._from_msgpack_decoded
         )
 
-    def serialize(self, event_message):
+    def serialize(self, event_message: dict):
         return self._from_msgpack_handler(event_message)
 
     def _from_msgpack_raw(self, parsed_data):
@@ -214,15 +216,10 @@ class _EventSerializerJSON(EventSerializer):
         if isinstance(body, dict):
             return body
 
-        try:
-            decoded_body = base64.b64decode(body)
-        except:  # noqa E722
-            return body
-
         if content_type == "application/json":
             try:
-                return json.loads(decoded_body)
-            except:  # noqa E722
-                pass
+                return json.loads(body.decode("utf-8"))
+            except Exception as exc:
+                sys.stderr.write(str(exc))
 
-        return decoded_body
+        return body
