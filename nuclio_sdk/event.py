@@ -89,27 +89,27 @@ class Event(object):
     @staticmethod
     def from_msgpack(parsed_data):
         """
-        Deprecated. use nuclio_sdk.event.EventSerializerFactory.create("msgpack").serialize(parsed_data) instead.
+        Deprecated. use nuclio_sdk.event.EventDeserializerFactory.create("msgpack").deserialize(parsed_data) instead.
         To be removed on >= 0.4.0
         """
-        return EventSerializerFactory.create("msgpack").serialize(parsed_data)
+        return EventDeserializerFactory.create("msgpack").deserialize(parsed_data)
 
     @staticmethod
     def from_json(data):
         """
-        Deprecated. use nuclio_sdk.event.EventSerializerFactory.create("json").serialize(data) instead.
+        Deprecated. use nuclio_sdk.event.EventDeserializerFactory.create("json").deserialize(data) instead.
         To be removed on >= 0.4.0
         """
-        return EventSerializerFactory.create("json").serialize(data)
+        return EventDeserializerFactory.create("json").deserialize(data)
 
     @classmethod
-    def from_parsed_data(cls, parsed_data, body, content_type):
+    def from_parsed_data(cls, parsed_data, body):
         trigger = TriggerInfo(
             parsed_data["trigger"]["kind"], parsed_data["trigger"]["name"]
         )
         return cls(
             body=body,
-            content_type=content_type,
+            content_type=parsed_data["content_type"],
             trigger=trigger,
             fields=parsed_data["fields"],
             headers=parsed_data["headers"],
@@ -127,13 +127,13 @@ class Event(object):
         )
 
     @classmethod
-    def from_parsed_data_bytes(cls, parsed_data, body, content_type):
+    def from_parsed_data_bytes(cls, parsed_data, body):
         trigger = TriggerInfo(
             parsed_data[b"trigger"][b"kind"], parsed_data[b"trigger"][b"name"]
         )
         return cls(
             body=body,
-            content_type=content_type,
+            content_type=parsed_data[b"content_type"],
             trigger=trigger,
             fields=parsed_data[b"fields"],
             headers=parsed_data[b"headers"],
@@ -154,24 +154,24 @@ class Event(object):
         return self.to_json()
 
 
-class EventSerializer(object):
-    def serialize(self, event_message) -> Event:
+class EventDeserializer(object):
+    def deserialize(self, event_message) -> Event:
         raise NotImplementedError
 
 
-class EventSerializerFactory(object):
+class EventDeserializerFactory(object):
     @staticmethod
-    def create(serializer_kind) -> EventSerializer:
-        if serializer_kind == "msgpack":
-            return _EventSerializerMsgPack(raw=False)
-        if serializer_kind == "msgpack_raw":
-            return _EventSerializerMsgPack(raw=True)
-        if serializer_kind == "json":
-            return _EventSerializerJSON()
-        raise RuntimeError(f"No such serializer kind {serializer_kind}")
+    def create(deserializer_kind) -> EventDeserializer:
+        if deserializer_kind == "msgpack":
+            return _EventDeserializerMsgPack(raw=False)
+        if deserializer_kind == "msgpack_raw":
+            return _EventDeserializerMsgPack(raw=True)
+        if deserializer_kind == "json":
+            return _EventDeserializerJSON()
+        raise RuntimeError(f"No such deserializer kind {deserializer_kind}")
 
 
-class _EventSerializerMsgPack(EventSerializer):
+class _EventDeserializerMsgPack(EventDeserializer):
     def __init__(self, raw=False):
 
         # return the concrete function that handled raw/decoded event messages
@@ -180,37 +180,44 @@ class _EventSerializerMsgPack(EventSerializer):
             self._from_msgpack_raw if raw else self._from_msgpack_decoded
         )
 
-    def serialize(self, event_message: dict):
+    def deserialize(self, event_message: dict):
         return self._from_msgpack_handler(event_message)
 
     def _from_msgpack_raw(self, parsed_data):
-        content_type = parsed_data[b"content_type"]
-        body = self._decode_body(parsed_data[b"body"], content_type)
-        return Event.from_parsed_data_bytes(parsed_data, body, content_type)
+        body = self._decode_body(parsed_data[b"body"], parsed_data[b"content_type"])
+        return Event.from_parsed_data_bytes(parsed_data, body)
 
     def _from_msgpack_decoded(self, parsed_data):
-        content_type = parsed_data["content_type"]
-        body = self._decode_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+        body = self._decode_body(parsed_data["body"], parsed_data["content_type"])
+        return Event.from_parsed_data(parsed_data, body)
 
-    def _decode_body(self, body, content_type):
-        if content_type == "application/json":
-            try:
-                return json.loads(body.decode("utf-8"))
-            except Exception as exc:
-                sys.stderr.write(str(exc))
+    def _decode_body_raw(self, body, content_type):
+        if content_type == b"application/json":
+            body = self._try_deserialize_json(body)
 
         return body
 
+    def _decode_body(self, body, content_type):
+        if content_type == "application/json":
+            body = self._try_deserialize_json(body)
 
-class _EventSerializerJSON(EventSerializer):
-    def serialize(self, event_message):
+        return body
+
+    def _try_deserialize_json(self, body):
+        try:
+            return json.loads(body.decode("utf-8"))
+        except Exception as exc:
+            sys.stderr.write(str(exc))
+        return body
+
+
+class _EventDeserializerJSON(EventDeserializer):
+    def deserialize(self, event_message):
         parsed_data = json.loads(event_message)
 
         # extract content type, needed to decode body
-        content_type = parsed_data["content_type"]
-        body = self._decode_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+        body = self._decode_body(parsed_data["body"], parsed_data["content_type"])
+        return Event.from_parsed_data(parsed_data, body)
 
     def _decode_body(self, body, content_type):
         if isinstance(body, dict):

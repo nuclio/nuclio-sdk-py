@@ -27,7 +27,7 @@ class TestEvent:
             trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
             method="GET",
         )
-        serialized_event = self._serialize_event(event)
+        serialized_event = self._deserialize_event(event)
         self.assertEqual(serialized_event.body, "Ynl0ZXMtYm9keQ==")
         self.assertEqual(serialized_event.content_type, "content-type")
         self.assertEqual(serialized_event.method, "GET")
@@ -40,30 +40,32 @@ class TestEvent:
 
     def test_event_to_json_bytes_non_utf8able_body(self):
         event = nuclio_sdk.Event(body=b"\x80abc")
-        serialized_event = self._serialize_event(event)
+        serialized_event = self._deserialize_event(event)
         self.assertEqual(serialized_event.body, "gGFiYw==")
 
     def test_event_to_json_string_body(self):
         request_body = "str-body"
         event = nuclio_sdk.Event(body=request_body)
-        serialized_event = self._serialize_event(event)
+        serialized_event = self._deserialize_event(event)
         self.assertEqual(request_body, serialized_event.body)
 
-    def _serialize_event(self, event):
+    def _deserialize_event(self, event):
         raise NotImplementedError
 
 
 class TestEventMsgPack(nuclio_sdk.test.TestCase, TestEvent):
-    def _serialize_event(self, event):
+    def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
-        return nuclio_sdk.EventSerializerFactory.create("msgpack").serialize(event_json)
+        return nuclio_sdk.EventDeserializerFactory.create("msgpack").deserialize(
+            event_json
+        )
 
 
 class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
-    def _serialize_event(self, event):
+    def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
         self._event_keys_to_byte_string(event_json)
-        return nuclio_sdk.EventSerializerFactory.create("msgpack_raw").serialize(
+        return nuclio_sdk.EventDeserializerFactory.create("msgpack_raw").deserialize(
             event_json
         )
 
@@ -77,8 +79,8 @@ class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
 
 
 class TestEventJson(nuclio_sdk.test.TestCase, TestEvent):
-    def _serialize_event(self, event):
+    def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
-        return nuclio_sdk.EventSerializerFactory.create("json").serialize(
+        return nuclio_sdk.EventDeserializerFactory.create("json").deserialize(
             json.dumps(event_json)
         )
