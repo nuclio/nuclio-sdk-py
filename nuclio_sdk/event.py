@@ -184,7 +184,7 @@ class _EventDeserializerMsgPack(EventDeserializer):
         return self._from_msgpack_handler(event_message)
 
     def _from_msgpack_raw(self, parsed_data):
-        body = self._decode_body(parsed_data[b"body"], parsed_data[b"content_type"])
+        body = self._decode_body_raw(parsed_data[b"body"], parsed_data[b"content_type"])
         return Event.from_parsed_data_bytes(parsed_data, body)
 
     def _from_msgpack_decoded(self, parsed_data):
