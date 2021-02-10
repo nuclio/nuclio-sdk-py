@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import enum
 import base64
 import sys
 import json
@@ -89,18 +90,26 @@ class Event(object):
     @staticmethod
     def from_msgpack(parsed_data):
         """
-        Deprecated. use nuclio_sdk.event.EventDeserializerFactory.create("msgpack").deserialize(parsed_data) instead.
-        To be removed on >= 0.4.0
+        Deprecated.
+        Use instead:
+         nuclio_sdk.event.EventDeserializerFactory.\
+           create(nuclio_sdk.event.EventDeserializerKinds.msgpack).\
+           deserialize(parsed_data)
+        NOTE: To be removed on >= 0.4.0
         """
-        return EventDeserializerFactory.create("msgpack").deserialize(parsed_data)
+        return EventDeserializerFactory.create(EventDeserializerKinds.msgpack).deserialize(parsed_data)
 
     @staticmethod
     def from_json(data):
         """
-        Deprecated. use nuclio_sdk.event.EventDeserializerFactory.create("json").deserialize(data) instead.
-        To be removed on >= 0.4.0
+        Deprecated.
+        Use instead:
+         nuclio_sdk.event.EventDeserializerFactory.\
+           create(nuclio_sdk.event.EventDeserializerKinds.json).\
+           deserialize(parsed_data)
+        NOTE: To be removed on >= 0.4.0
         """
-        return EventDeserializerFactory.create("json").deserialize(data)
+        return EventDeserializerFactory.create(EventDeserializerKinds.json).deserialize(data)
 
     @classmethod
     def from_parsed_data(cls, parsed_data, body):
@@ -154,7 +163,7 @@ class Event(object):
         return self.to_json()
 
 
-class EventDeserializer(object):
+class _EventDeserializer(object):
     def deserialize(self, event_message):
         raise NotImplementedError
 
@@ -170,19 +179,25 @@ class EventDeserializer(object):
         return body
 
 
+class EventDeserializerKinds(enum.Enum):
+    msgpack = "msgpack"
+    msgpack_raw = "msgpack_raw"
+    json = "json"
+
+
 class EventDeserializerFactory(object):
     @staticmethod
     def create(deserializer_kind):
-        if deserializer_kind == "msgpack":
+        if deserializer_kind is EventDeserializerKinds.msgpack:
             return _EventDeserializerMsgPack(raw=False)
-        if deserializer_kind == "msgpack_raw":
+        if deserializer_kind is EventDeserializerKinds.msgpack_raw:
             return _EventDeserializerMsgPack(raw=True)
-        if deserializer_kind == "json":
+        if deserializer_kind is EventDeserializerKinds.json:
             return _EventDeserializerJSON()
         raise RuntimeError(f"No such deserializer kind {deserializer_kind}")
 
 
-class _EventDeserializerMsgPack(EventDeserializer):
+class _EventDeserializerMsgPack(_EventDeserializer):
     def __init__(self, raw=False):
 
         # return the concrete function that handled raw/decoded event messages
@@ -207,7 +222,7 @@ class _EventDeserializerMsgPack(EventDeserializer):
         return Event.from_parsed_data(parsed_data, event_body)
 
 
-class _EventDeserializerJSON(EventDeserializer):
+class _EventDeserializerJSON(_EventDeserializer):
     def deserialize(self, event_message):
         parsed_data = json.loads(event_message)
 
