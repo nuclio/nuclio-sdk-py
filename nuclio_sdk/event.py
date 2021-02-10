@@ -155,13 +155,24 @@ class Event(object):
 
 
 class EventDeserializer(object):
-    def deserialize(self, event_message) -> Event:
+    def deserialize(self, event_message):
         raise NotImplementedError
+
+    def _try_deserialize_json(self, body):
+        try:
+            return json.loads(body)
+        except Exception as exc:
+
+            # newline to flush
+            sys.stderr.write(
+                "Failed deserializing json body, error message: {0}\n".format(str(exc))
+            )
+        return body
 
 
 class EventDeserializerFactory(object):
     @staticmethod
-    def create(deserializer_kind) -> EventDeserializer:
+    def create(deserializer_kind):
         if deserializer_kind == "msgpack":
             return _EventDeserializerMsgPack(raw=False)
         if deserializer_kind == "msgpack_raw":
@@ -184,31 +195,16 @@ class _EventDeserializerMsgPack(EventDeserializer):
         return self._from_msgpack_handler(event_message)
 
     def _from_msgpack_raw(self, parsed_data):
-        body = self._decode_body_raw(parsed_data[b"body"], parsed_data[b"content_type"])
-        return Event.from_parsed_data_bytes(parsed_data, body)
+        event_body = parsed_data[b"body"]
+        if parsed_data[b"content_type"] == b"application/json":
+            event_body = self._try_deserialize_json(event_body.decode("utf-8"))
+        return Event.from_parsed_data_bytes(parsed_data, event_body)
 
     def _from_msgpack_decoded(self, parsed_data):
-        body = self._decode_body(parsed_data["body"], parsed_data["content_type"])
-        return Event.from_parsed_data(parsed_data, body)
-
-    def _decode_body_raw(self, body, content_type):
-        if content_type == b"application/json":
-            body = self._try_deserialize_json(body)
-
-        return body
-
-    def _decode_body(self, body, content_type):
-        if content_type == "application/json":
-            body = self._try_deserialize_json(body)
-
-        return body
-
-    def _try_deserialize_json(self, body):
-        try:
-            return json.loads(body.decode("utf-8"))
-        except Exception as exc:
-            sys.stderr.write(str(exc))
-        return body
+        event_body = parsed_data["body"]
+        if parsed_data["content_type"] == "application/json":
+            event_body = self._try_deserialize_json(event_body.decode("utf-8"))
+        return Event.from_parsed_data(parsed_data, event_body)
 
 
 class _EventDeserializerJSON(EventDeserializer):
@@ -216,17 +212,9 @@ class _EventDeserializerJSON(EventDeserializer):
         parsed_data = json.loads(event_message)
 
         # extract content type, needed to decode body
-        body = self._decode_body(parsed_data["body"], parsed_data["content_type"])
+        body = parsed_data["body"]
+        if parsed_data["content_type"] == "application/json" and not isinstance(
+            body, dict
+        ):
+            body = self._try_deserialize_json(body)
         return Event.from_parsed_data(parsed_data, body)
-
-    def _decode_body(self, body, content_type):
-        if isinstance(body, dict):
-            return body
-
-        if content_type == "application/json":
-            try:
-                return json.loads(body.decode("utf-8"))
-            except Exception as exc:
-                sys.stderr.write(str(exc))
-
-        return body
