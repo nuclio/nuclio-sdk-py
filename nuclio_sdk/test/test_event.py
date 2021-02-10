@@ -56,8 +56,8 @@ class TestEvent:
 class TestEventMsgPack(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
-        return nuclio_sdk.EventDeserializerFactory.create("msgpack").deserialize(
-            event_json
+        return nuclio_sdk.event.Event.deserialize(
+            event_json, nuclio_sdk.event.EventDeserializerKinds.msgpack
         )
 
 
@@ -65,8 +65,8 @@ class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
         self._event_keys_to_byte_string(event_json)
-        return nuclio_sdk.EventDeserializerFactory.create("msgpack_raw").deserialize(
-            event_json
+        return nuclio_sdk.event.Event.deserialize(
+            event_json, nuclio_sdk.event.EventDeserializerKinds.msgpack_raw
         )
 
     def _event_keys_to_byte_string(self, d):
@@ -81,6 +81,6 @@ class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
 class TestEventJson(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         event_json = {k: v for k, v in json.loads(event.to_json()).items()}
-        return nuclio_sdk.EventDeserializerFactory.create("json").deserialize(
-            json.dumps(event_json)
+        return nuclio_sdk.event.Event.deserialize(
+            json.dumps(event_json), nuclio_sdk.event.EventDeserializerKinds.json
         )

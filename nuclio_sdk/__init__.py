@@ -14,7 +14,7 @@
 
 from nuclio_sdk.logger import Logger
 from nuclio_sdk.context import Context
-from nuclio_sdk.event import Event, TriggerInfo, EventDeserializerFactory
+from nuclio_sdk.event import Event, TriggerInfo, EventDeserializerKinds
 from nuclio_sdk.platform import Platform
 from nuclio_sdk.response import Response
 from nuclio_sdk.exceptions import ExceptionWithResponse
