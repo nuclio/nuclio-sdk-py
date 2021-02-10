@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 import nuclio_sdk.test
 import nuclio_sdk.helpers
 import nuclio_sdk.json_encoder
 
 
-class TestEvent(nuclio_sdk.test.TestCase):
+class TestEvent:
     def test_event_to_json_bytes_body(self):
         event = nuclio_sdk.Event(
             body=b"bytes-body",
@@ -25,25 +27,60 @@ class TestEvent(nuclio_sdk.test.TestCase):
             trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
             method="GET",
         )
-        event_json = event.to_json()
-        serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event["body"], "Ynl0ZXMtYm9keQ==")
-        self.assertEqual(serialized_event["content_type"], "content-type")
-        self.assertEqual(serialized_event["method"], "GET")
-        self.assertEqual(
-            serialized_event["trigger"], {"kind": "http", "name": "my-http-trigger"}
+        serialized_event = self._deserialize_event(event)
+        self.assertEqual(serialized_event.body, "Ynl0ZXMtYm9keQ==")
+        self.assertEqual(serialized_event.content_type, "content-type")
+        self.assertEqual(serialized_event.method, "GET")
+        self.assertDictEqual(
+            serialized_event.trigger.__dict__,
+            {"kind": "http", "name": "my-http-trigger"},
         )
-        self.assertEqual(serialized_event["last_in_batch"], False)
-        self.assertEqual(serialized_event["offset"], 0)
+        self.assertEqual(serialized_event.last_in_batch, False)
+        self.assertEqual(serialized_event.offset, 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
         event = nuclio_sdk.Event(body=b"\x80abc")
-        event_json = event.to_json()
-        serialized_event = nuclio_sdk.json_encoder.json.loads(event_json)
-        self.assertEqual(serialized_event["body"], "gGFiYw==")
+        serialized_event = self._deserialize_event(event)
+        self.assertEqual(serialized_event.body, "gGFiYw==")
 
     def test_event_to_json_string_body(self):
         request_body = "str-body"
         event = nuclio_sdk.Event(body=request_body)
-        jsonized_event = nuclio_sdk.json_encoder.json.loads(event.to_json())
-        self.assertEqual(request_body, jsonized_event["body"])
+        serialized_event = self._deserialize_event(event)
+        self.assertEqual(request_body, serialized_event.body)
+
+    def _deserialize_event(self, event):
+        raise NotImplementedError
+
+
+class TestEventMsgPack(nuclio_sdk.test.TestCase, TestEvent):
+    def _deserialize_event(self, event):
+        event_json = {k: v for k, v in json.loads(event.to_json()).items()}
+        return nuclio_sdk.event.Event.deserialize(
+            event_json, nuclio_sdk.event.EventDeserializerKinds.msgpack
+        )
+
+
+class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
+    def _deserialize_event(self, event):
+        event_json = {k: v for k, v in json.loads(event.to_json()).items()}
+        self._event_keys_to_byte_string(event_json)
+        return nuclio_sdk.event.Event.deserialize(
+            event_json, nuclio_sdk.event.EventDeserializerKinds.msgpack_raw
+        )
+
+    def _event_keys_to_byte_string(self, d):
+        for k, v in list(d.items()):
+            if isinstance(k, str):
+                d[k.encode()] = v
+                del d[k]
+            if isinstance(v, dict):
+                self._event_keys_to_byte_string(v)
+
+
+class TestEventJson(nuclio_sdk.test.TestCase, TestEvent):
+    def _deserialize_event(self, event):
+        event_json = {k: v for k, v in json.loads(event.to_json()).items()}
+        return nuclio_sdk.event.Event.deserialize(
+            json.dumps(event_json), nuclio_sdk.event.EventDeserializerKinds.json
+        )

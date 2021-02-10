@@ -12,10 +12,123 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import enum
 import base64
 import sys
 import json
 import datetime
+
+
+class _EventDeserializer(object):
+    def deserialize(self, event_message):
+        raise NotImplementedError
+
+    @staticmethod
+    def _try_deserialize_json(body):
+        try:
+            return json.loads(body.decode("utf-8"))
+        except Exception as exc:
+
+            # newline to force flush
+            # NOTE: processor runs sdk with `-u` which means stderr is unbuffered which needs manual flushing
+            sys.stderr.write(
+                "Failed deserializing json body, error message: {0}\n".format(str(exc))
+            )
+        return body
+
+    @staticmethod
+    def _from_parsed_data(parsed_data, body):
+        trigger = TriggerInfo(
+            parsed_data["trigger"]["kind"], parsed_data["trigger"]["name"]
+        )
+        return Event(
+            body=body,
+            content_type=parsed_data["content_type"],
+            trigger=trigger,
+            fields=parsed_data["fields"],
+            headers=parsed_data["headers"],
+            _id=parsed_data["id"],
+            method=parsed_data["method"],
+            path=parsed_data["path"],
+            size=parsed_data["size"],
+            timestamp=datetime.datetime.utcfromtimestamp(parsed_data["timestamp"]),
+            url=parsed_data["url"],
+            shard_id=parsed_data["shard_id"],
+            num_shards=parsed_data["num_shards"],
+            _type=parsed_data["type"],
+            type_version=parsed_data["type_version"],
+            version=parsed_data["version"],
+        )
+
+    @staticmethod
+    def _from_parsed_data_bytes(parsed_data, body):
+        trigger = TriggerInfo(
+            parsed_data[b"trigger"][b"kind"], parsed_data[b"trigger"][b"name"]
+        )
+        return Event(
+            body=body,
+            content_type=parsed_data[b"content_type"],
+            trigger=trigger,
+            fields=parsed_data[b"fields"],
+            headers=parsed_data[b"headers"],
+            _id=parsed_data[b"id"],
+            method=parsed_data[b"method"],
+            path=parsed_data[b"path"],
+            size=parsed_data[b"size"],
+            timestamp=datetime.datetime.utcfromtimestamp(parsed_data[b"timestamp"]),
+            url=parsed_data[b"url"],
+            shard_id=parsed_data[b"shard_id"],
+            num_shards=parsed_data[b"num_shards"],
+            _type=parsed_data[b"type"],
+            type_version=parsed_data[b"type_version"],
+            version=parsed_data[b"version"],
+        )
+
+
+class _EventDeserializerMsgPack(_EventDeserializer):
+    def __init__(self, raw=False):
+
+        # return the concrete function that handled raw/decoded event messages
+        # pre-assign to avoid if/else during event processing
+        self._from_msgpack_handler = (
+            self._from_msgpack_raw if raw else self._from_msgpack_decoded
+        )
+
+    def deserialize(self, event_message):
+        return self._from_msgpack_handler(event_message)
+
+    @staticmethod
+    def _from_msgpack_raw(parsed_data):
+        event_body = parsed_data[b"body"]
+        if parsed_data[b"content_type"] == b"application/json":
+            event_body = _EventDeserializer._try_deserialize_json(event_body)
+        return _EventDeserializer._from_parsed_data_bytes(parsed_data, event_body)
+
+    @staticmethod
+    def _from_msgpack_decoded(parsed_data):
+        event_body = parsed_data["body"]
+        if parsed_data["content_type"] == "application/json":
+            event_body = _EventDeserializer._try_deserialize_json(event_body)
+        return _EventDeserializer._from_parsed_data(parsed_data, event_body)
+
+
+class _EventDeserializerJSON(_EventDeserializer):
+    def deserialize(self, event_message):
+        parsed_data = json.loads(event_message)
+
+        # extract content type, needed to decode body
+        body = parsed_data["body"]
+        if parsed_data["content_type"] == "application/json" and not isinstance(
+            body, dict
+        ):
+            body = _EventDeserializer._try_deserialize_json(body)
+        return _EventDeserializer._from_parsed_data(parsed_data, body)
+
+
+class EventDeserializerKinds(enum.Enum):
+    msgpack = _EventDeserializerMsgPack(raw=False)
+    msgpack_raw = _EventDeserializerMsgPack(raw=True)
+    json = _EventDeserializerJSON()
 
 
 class TriggerInfo(object):
@@ -87,80 +200,29 @@ class Event(object):
                 return value
 
     @staticmethod
-    def from_msgpack(parsed_data):
-        """Decode msgpack event encoded as JSON by processor"""
-
-        # extract content type, needed to decode body
-        content_type = parsed_data["content_type"]
-        body = Event.decode_msgpack_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+    def from_msgpack(data):
+        """
+        Deprecated.
+        Use instead: Event.deserialize(data, kind=EventDeserializerKinds.msgpack)
+        NOTE: To be removed on >= 0.4.0
+        """
+        return Event.deserialize(data, kind=EventDeserializerKinds.msgpack)
 
     @staticmethod
     def from_json(data):
-        """Decode event encoded as JSON by processor"""
-
-        parsed_data = json.loads(data)
-
-        # extract content type, needed to decode body
-        content_type = parsed_data["content_type"]
-        body = Event.decode_body(parsed_data["body"], content_type)
-        return Event.from_parsed_data(parsed_data, body, content_type)
+        """
+        Deprecated.
+        Use instead: Event.deserialize(data, kind=EventDeserializerKinds.json)
+        NOTE: To be removed on >= 0.4.0
+        """
+        return Event.deserialize(data, kind=EventDeserializerKinds.json)
 
     @classmethod
-    def from_parsed_data(cls, parsed_data, body, content_type):
-        trigger = TriggerInfo(
-            parsed_data["trigger"]["kind"], parsed_data["trigger"]["name"]
-        )
-        return cls(
-            body=body,
-            content_type=content_type,
-            trigger=trigger,
-            fields=parsed_data.get("fields"),
-            headers=parsed_data.get("headers"),
-            _id=parsed_data["id"],
-            method=parsed_data["method"],
-            path=parsed_data["path"],
-            size=parsed_data["size"],
-            timestamp=datetime.datetime.utcfromtimestamp(parsed_data["timestamp"]),
-            url=parsed_data["url"],
-            shard_id=parsed_data["shard_id"],
-            num_shards=parsed_data["num_shards"],
-            _type=parsed_data["type"],
-            type_version=parsed_data["type_version"],
-            version=parsed_data["version"],
-        )
-
-    @staticmethod
-    def decode_body(body, content_type):
-        """Decode event body"""
-
-        if isinstance(body, dict):
-            return body
-
-        try:
-            decoded_body = base64.b64decode(body)
-        except:  # noqa E722
-            return body
-
-        if content_type == "application/json":
-            try:
-                return json.loads(decoded_body)
-            except:  # noqa E722
-                pass
-
-        return decoded_body
-
-    @staticmethod
-    def decode_msgpack_body(body, content_type):
-        """Decode msgpack event body"""
-
-        if content_type == "application/json":
-            try:
-                return json.loads(body.decode("utf-8"))
-            except Exception as exc:
-                sys.stderr.write(str(exc))
-
-        return body
+    def deserialize(cls, data, kind=EventDeserializerKinds.msgpack_raw):
+        """
+        Deserialize event message
+        """
+        return kind.value.deserialize(data)
 
     def __repr__(self):
         return self.to_json()
