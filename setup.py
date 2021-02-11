@@ -38,9 +38,17 @@ def parse_deps():
                 deps.append("{}{}".format(dep, version))
 
 
+def get_version():
+    with open("VERSION", "r") as f:
+        version = f.read().strip()
+    if version.startswith("v"):
+        version = version[1:]
+    return version
+
+
 setup(
     name="nuclio_sdk",
-    version="0.3.0",
+    version=get_version(),
     description="Client for the Nuclio serverless platform",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

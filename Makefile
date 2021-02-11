@@ -1,5 +1,5 @@
-PIPENV_PYTHON_VERSION  ?= 3.7
-
+PIPENV_PYTHON_VERSION ?= 3.7
+NUCLIO_SDK_PY_VERSION ?= $(shell git describe --tags --abbrev=0)
 
 .PHONY: all
 all:
@@ -11,11 +11,12 @@ upload: clean build lint test
 
 .PHONY: build
 build:
+	@echo $(NUCLIO_SDK_PY_VERSION) > VERSION
 	python -m pipenv run build
 
 .PHONY: clean
 clean:
-	@rm -rf dist build nuclio_sdk.egg-info
+	@rm -rf VERSION dist build nuclio_sdk.egg-info
 
 .PHONY: clean_pyc
 clean_pyc:
