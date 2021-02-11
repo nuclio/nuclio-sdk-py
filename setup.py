@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 try:
     from setuptools import setup
 except ImportError:
@@ -39,6 +41,8 @@ def parse_deps():
 
 
 def get_version():
+    if not os.path.exists("VERSION"):
+        return "0.0.0-dev0"
     with open("VERSION", "r") as f:
         version = f.read().strip()
     if version.startswith("v"):
