@@ -50,6 +50,7 @@ setup(
     url="https://github.com/nuclio/nuclio-sdk-py",
     packages=["nuclio_sdk", "nuclio_sdk.test"],
     # install_requires=parse_deps(),
+    python_requires=">=3",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
