@@ -29,4 +29,4 @@ class Encoder(json.JSONEncoder):
                 try:
                     return str(obj)
                 except Exception as exc:
-                    return 'Unable to serialize object: {0}'.format(exc)
+                    return "Unable to serialize object: {0}".format(exc)

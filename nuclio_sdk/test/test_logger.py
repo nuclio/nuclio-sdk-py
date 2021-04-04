@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import logging
 import datetime
 import io
@@ -61,7 +60,10 @@ class TestLogger(nuclio_sdk.test.TestCase):
         date = datetime.datetime.strptime("Oct 1 2020", "%b %d %Y")
         self._logger.debug_with("TestD", date=date)
         self.assertIn("TestD", self._io.getvalue())
-        self.assertIn('"with": {"date": "datetime.datetime(2020, 10, 1, 0, 0)"}', self._io.getvalue())
+        self.assertIn(
+            '"with": {"date": "datetime.datetime(2020, 10, 1, 0, 0)"}',
+            self._io.getvalue(),
+        )
 
     def test_fail_to_log(self):
         """
@@ -80,5 +82,7 @@ class TestLogger(nuclio_sdk.test.TestCase):
 
         self._logger.debug_with("TestD", some_instance=SomeObject())
         self.assertIn("TestD", self._io.getvalue())
-        self.assertIn('"with": {"some_instance": "Unable to serialize object: I am not a string"}',
-                      self._io.getvalue())
+        self.assertIn(
+            '"with": {"some_instance": "Unable to serialize object: I am not a string"}',
+            self._io.getvalue(),
+        )
