@@ -163,7 +163,7 @@ jobs:
 
       - name: Invoke function
         run: |
-          nuctl invoke $FUNCTION_NAME
+          echo "Hello, from CI" | nuctl invoke $FUNCTION_NAME
 
       - name: Print function container logs
         run: |
