@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import logging
 import datetime
 import io
@@ -53,7 +52,6 @@ class TestLogger(nuclio_sdk.test.TestCase):
         self.assertIn("TestC", self._io.getvalue())
         self.assertIn('"with": {"number": 1}', self._io.getvalue())
 
-    @unittest.skip("currently unsupported")
     def test_log_with_date(self):
         """
         log line with datetime kwarg
@@ -62,4 +60,29 @@ class TestLogger(nuclio_sdk.test.TestCase):
         date = datetime.datetime.strptime("Oct 1 2020", "%b %d %Y")
         self._logger.debug_with("TestD", date=date)
         self.assertIn("TestD", self._io.getvalue())
-        self.assertIn('"with": {"date": "2020-10-01T00:00:00"}', self._io.getvalue())
+        self.assertIn(
+            '"with": {"date": "datetime.datetime(2020, 10, 1, 0, 0)"}',
+            self._io.getvalue(),
+        )
+
+    def test_fail_to_log(self):
+        """
+        Do not fail logging when an object is not log-able
+        """
+
+        class SomeObject(object):
+            def __str__(self):
+                raise Exception("I am not a string")
+
+            def __repr__(self):
+                raise Exception("Not yet a repr")
+
+            def __log__(self):
+                raise Exception("All I need is time")
+
+        self._logger.debug_with("TestD", some_instance=SomeObject())
+        self.assertIn("TestD", self._io.getvalue())
+        self.assertIn(
+            '"with": {"some_instance": "Unable to serialize object: I am not a string"}',
+            self._io.getvalue(),
+        )

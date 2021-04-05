@@ -19,5 +19,14 @@ import json
 class Encoder(json.JSONEncoder):
     def default(self, obj):
 
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+        # EAFP all the way. Leave the unused "exc" in for debugging ease
+        try:
+            return obj.__log__()
+        except Exception as exc:  # noqa
+            try:
+                return obj.__repr__()
+            except Exception as exc:  # noqa
+                try:
+                    return str(obj)
+                except Exception as exc:
+                    return "Unable to serialize object: {0}".format(exc)
