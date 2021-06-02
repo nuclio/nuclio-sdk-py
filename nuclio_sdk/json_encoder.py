@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import json
 import json.encoder
 
@@ -51,7 +50,7 @@ class Encoder(json.JSONEncoder):
             _inf=json.encoder.INFINITY,
             _neginf=-json.encoder.INFINITY,
         ):
-            if math.isnan(o):
+            if o != o:
                 text = '"{0}"'.format(nan_str)
             elif o == _inf:
                 text = '"Infinity"'
