@@ -41,30 +41,42 @@ class Encoder(json.JSONEncoder):
         else:
             _encoder = json.encoder.encode_basestring
 
-        def floatstr(o,
-                     allow_nan=self.allow_nan,
-                     nan_str=self.nan_str,
-                     _repr=float.__repr__, _inf=json.encoder.INFINITY, _neginf=-json.encoder.INFINITY):
+        def floatstr(
+            o,
+            allow_nan=self.allow_nan,
+            nan_str=self.nan_str,
+            _repr=float.__repr__,
+            _inf=json.encoder.INFINITY,
+            _neginf=-json.encoder.INFINITY,
+        ):
             if o != o:
-                text = '\"{0}\"'.format(nan_str)
+                text = '"{0}"'.format(nan_str)
             elif o == _inf:
-                text = '\"Infinity\"'
+                text = '"Infinity"'
             elif o == _neginf:
-                text = '\"-Infinity\"'
+                text = '"-Infinity"'
             else:
                 return _repr(o)
 
             if not allow_nan:
                 raise ValueError(
-                    "Out of range float values are not JSON compliant: " +
-                    repr(o))
+                    "Out of range float values are not JSON compliant: " + repr(o)
+                )
 
             return text
 
         _iterencode = json.encoder._make_iterencode(
-            markers, self.default, _encoder, self.indent, floatstr,
-            self.key_separator, self.item_separator, self.sort_keys,
-            self.skipkeys, _one_shot)
+            markers,
+            self.default,
+            _encoder,
+            self.indent,
+            floatstr,
+            self.key_separator,
+            self.item_separator,
+            self.sort_keys,
+            self.skipkeys,
+            _one_shot,
+        )
         return _iterencode(o, 0)
 
     def default(self, obj):

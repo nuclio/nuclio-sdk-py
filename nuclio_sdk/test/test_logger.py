@@ -66,7 +66,7 @@ class TestLogger(nuclio_sdk.test.TestCase):
         )
 
     def test_log_nan(self):
-        self._logger.info_with("logNaN", nan=float('NaN'))
+        self._logger.info_with("logNaN", nan=float("NaN"))
         self.assertIn("logNaN", self._io.getvalue())
         self.assertIn(
             '"with": {"nan": "NaN"}',
