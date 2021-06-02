@@ -21,8 +21,7 @@ import nuclio_sdk
 
 def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
     headers = {
-        ensure_str(header): ensure_str(value)
-        for header, value in event.headers.items()
+        ensure_str(header): ensure_str(value) for header, value in event.headers.items()
     }
     context.logger.debug_with(
         "Received request",
