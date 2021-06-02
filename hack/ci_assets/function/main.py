@@ -20,6 +20,9 @@ import nuclio_sdk
 
 
 def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
+    headers = {
+        ensure_str(header): ensure_str(value) for header, value in event.headers.items()
+    }
     context.logger.debug_with(
         "Received request",
         event=json.dumps(
@@ -27,10 +30,7 @@ def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
                 "id": event.id,
                 "eventType": event.trigger.kind,
                 "contentType": event.content_type,
-                "headers": {
-                    ensure_str(header): ensure_str(value)
-                    for header, value in event.headers.items()
-                },
+                "headers": headers,
                 "timestamp": event.timestamp.isoformat("T") + "Z",
                 "path": event.path,
                 "url": event.url,
@@ -46,7 +46,7 @@ def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
         ),
     )
     return context.Response(
-        headers=event.headers,
+        headers=headers,
         body={
             "sdk_version": get_sdk_version(),
         },
