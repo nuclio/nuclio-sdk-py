@@ -66,10 +66,26 @@ class TestLogger(nuclio_sdk.test.TestCase):
         )
 
     def test_log_nan(self):
-        self._logger.info_with("logNaN", nan=float("NaN"))
-        self.assertIn("logNaN", self._io.getvalue())
+        self._logger.info_with(self._testMethodName, nan=float("NaN"))
+        self.assertIn(self._testMethodName, self._io.getvalue())
         self.assertIn(
             '"with": {"nan": "NaN"}',
+            self._io.getvalue(),
+        )
+
+    def test_log_infinity(self):
+        self._logger.info_with(self._testMethodName, nan=float("Infinity"))
+        self.assertIn(self._testMethodName, self._io.getvalue())
+        self.assertIn(
+            '"with": {"nan": "Infinity"}',
+            self._io.getvalue(),
+        )
+
+    def test_log_minus_infinity(self):
+        self._logger.info_with(self._testMethodName, nan=float("-Infinity"))
+        self.assertIn(self._testMethodName, self._io.getvalue())
+        self.assertIn(
+            '"with": {"nan": "-Infinity"}',
             self._io.getvalue(),
         )
 

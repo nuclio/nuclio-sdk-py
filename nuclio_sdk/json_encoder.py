@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import json
 import json.encoder
 
@@ -23,7 +24,8 @@ class Encoder(json.JSONEncoder):
         self.nan_str = "NaN"
 
     def iterencode(self, o, _one_shot=False):
-        """Encode the given object and yield each string
+        """
+        Encode the given object and yield each string
         representation as available.
 
         For example::
@@ -49,7 +51,7 @@ class Encoder(json.JSONEncoder):
             _inf=json.encoder.INFINITY,
             _neginf=-json.encoder.INFINITY,
         ):
-            if o != o:
+            if math.isnan(o):
                 text = '"{0}"'.format(nan_str)
             elif o == _inf:
                 text = '"Infinity"'
