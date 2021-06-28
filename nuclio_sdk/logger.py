@@ -31,7 +31,7 @@ class JSONFormatter(logging.Formatter):
             'with': getattr(record, 'with', {}),
         }
 
-        return 'l' + self._json_encoder.encode(record_fields)
+        return self._json_encoder.encode(record_fields)
 
 
 class HumanReadableFormatter(logging.Formatter):
