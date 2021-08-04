@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
+
+env:
+  PIPENV_PYTHON_VERSION: 3.7
+
+jobs:
+  build-and-release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump github context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Dump runner context
+        run: echo "$RUNNER_CONTEXT"
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PIPENV_PYTHON_VERSION }}
+
+      - name: Set envs
+        run: |
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          RC_RELEASE=false
+          if echo $VERSION_TAG | grep -qE ".*-rc[0-9]+"; then\
+            RC_RELEASE=true;\
+          fi
+          echo "NUCLIO_SDK_PY_VERSION=$VERSION_TAG" >> $GITHUB_ENV
+          echo "RC_RELEASE=$RC_RELEASE" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          make install_pipenv
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Release Test-PyPI
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        if: env.RC_RELEASE == 'true'
+        with:
+          user: __token__
+          skip_existing: true
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+          verbose: true
+
+      - name: Release PyPI
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        if: env.RC_RELEASE == 'false'
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true

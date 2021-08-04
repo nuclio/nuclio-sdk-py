@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 try:
     from setuptools import setup
 except ImportError:
@@ -38,9 +40,19 @@ def parse_deps():
                 deps.append('{}{}'.format(dep, version))
 
 
+def get_version():
+    if not os.path.exists("VERSION"):
+        return "0.0.0-dev0"
+    with open("VERSION", "r") as f:
+        version = f.read().strip()
+    if version.startswith("v"):
+        version = version[1:]
+    return version
+
+
 setup(
     name='nuclio_sdk',
-    version='0.2.0',
+    version=get_version(),
     description='Client for the Nuclio serverless platform',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

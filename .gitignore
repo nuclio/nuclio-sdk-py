@@ -4,3 +4,5 @@ dist/
 nuclio_sdk.egg-info/
 *.pyc
 .idea
+.github/act
+VERSION
