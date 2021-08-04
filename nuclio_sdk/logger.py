@@ -17,10 +17,9 @@ import logging
 import nuclio_sdk.json_encoder
 
 
-class JSONFormatter(logging.Formatter):
+class RawJSONFormatter(logging.Formatter):
     def __init__(self):
-        super(JSONFormatter, self).__init__()
-
+        super(RawJSONFormatter, self).__init__()
         self._json_encoder = nuclio_sdk.json_encoder.Encoder()
 
     def format(self, record):
@@ -32,6 +31,14 @@ class JSONFormatter(logging.Formatter):
         }
 
         return self._json_encoder.encode(record_fields)
+
+
+class JSONFormatter(RawJSONFormatter):
+
+    def format(self, record):
+
+        # on version >= 0.4.0, the `l` prefix is omitted
+        return 'l' + super(JSONFormatter, self).format(record)
 
 
 class HumanReadableFormatter(logging.Formatter):
