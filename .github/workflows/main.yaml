@@ -12,8 +12,9 @@ env:
   NUCLIO_LABEL: 1.5.22
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
+    name: Unit test (Python ${{ matrix.python_version }})
     strategy:
       matrix:
         python-version: [2.7, 3.6, 3.7, 3.8]
@@ -47,8 +48,10 @@ jobs:
         run: make test
 
   integration:
+    name: Integration test (Python ${{ matrix.python_version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [2.7, 3.6]
     steps:
@@ -97,7 +100,11 @@ jobs:
           cat $(pwd)/hack/ci_assets/function/function.yaml | \
             envsubst | \
             tee $(pwd)/hack/ci_assets/function/function.yaml
+
+          # show rendered
+          cat $(pwd)/hack/ci_assets/function/function.yaml
         working-directory: nuclio-sdk-py
+        shell: bash
         env:
           REPO_USER: ${{ env.ACTOR }}
           REPO_BRANCH: ${{ env.BRANCH }}
