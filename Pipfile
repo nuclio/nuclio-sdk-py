@@ -10,6 +10,7 @@ nuclio-sdk = {editable = true,path = "."}
 flake8 = "*"
 twine = "*"
 bleach = "==3.3.0"
+build = ">0.2"
 
 [scripts]
 build = "python -m build --sdist --wheel --outdir dist/"
