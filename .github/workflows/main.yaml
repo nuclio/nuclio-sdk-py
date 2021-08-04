@@ -50,97 +50,97 @@ jobs:
       - name: Test
         run: make test
 
-  integration:
-    name: Integration test (Python ${{ matrix.python_version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: [ 2.7, 3.6 ]
-    steps:
-      - name: Dump github context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      - name: Dump runner context
-        run: echo "$RUNNER_CONTEXT"
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-
-      - name: Clone Nuclio sdk py
-        uses: actions/checkout@v2
-        with:
-          path: nuclio-sdk-py
-
-      - name: Clone Nuclio
-        uses: actions/checkout@v2
-        with:
-          repository: nuclio/nuclio
-          ref: development
-          path: nuclio
-          token: ${{ github.token }}
-
-      - uses: actions/setup-go@v2
-        with:
-          go-version: "^1.14.0"
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Set runtime env
-        run: |
-          function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
-
-          # if pull request, else push
-          if [ "${{ github.event_name }}" == "pull_request" ]; then\
-            actor=${{ github.actor }};\
-            branch=${{ github.head_ref }};\
-          else\
-            actor=${{ github.repository_owner }};\
-            branch=${GITHUB_REF#refs/heads/};\
-          fi
-
-          echo "FUNCTION_NAME=$function_name" >> $GITHUB_ENV
-          echo "ACTOR=$actor" >> $GITHUB_ENV
-          echo "BRANCH=$branch" >> $GITHUB_ENV
-
-      - name: Build nuctl
-        run: make nuctl-bin
-        working-directory: nuclio
-
-      - name: Install nuctl
-        run: |
-
-          # install nuctl
-          cp nuctl-$NUCLIO_LABEL-linux-amd64 nuctl
-          sudo -EH install nuctl /usr/local/bin
-
-          # print version for sanity
-          nuctl version
-        working-directory: nuclio
-
-      - name: Deploy function
-        run: |
-          nuctl deploy $FUNCTION_NAME \
-            --verbose \
-            --runtime python:${{ matrix.python_version }} \
-            --handler main:handler \
-            --build-command "@nuclio.postCopy" \
-            --build-command "pip install git+https://github.com/$ACTOR/nuclio-sdk-py.git@$BRANCH" \
-            --path $(pwd)/hack/ci_assets/function/main.py
-        working-directory: nuclio-sdk-py
-        env:
-          NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE: volume
-
-      - name: Invoke function
-        run: |
-          nuctl invoke $FUNCTION_NAME
-
-      - name: Print function container logs
-        run: |
-          docker logs nuclio-nuclio-$FUNCTION_NAME
+#  integration:
+#    name: Integration test (Python ${{ matrix.python_version }})
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        python_version: [ 2.7, 3.6 ]
+#    steps:
+#      - name: Dump github context
+#        run: echo "$GITHUB_CONTEXT"
+#        env:
+#          GITHUB_CONTEXT: ${{ toJson(github) }}
+#
+#      - name: Dump runner context
+#        run: echo "$RUNNER_CONTEXT"
+#        env:
+#          RUNNER_CONTEXT: ${{ toJson(runner) }}
+#
+#      - name: Clone Nuclio sdk py
+#        uses: actions/checkout@v2
+#        with:
+#          path: nuclio-sdk-py
+#
+#      - name: Clone Nuclio
+#        uses: actions/checkout@v2
+#        with:
+#          repository: nuclio/nuclio
+#          ref: development
+#          path: nuclio
+#          token: ${{ github.token }}
+#
+#      - uses: actions/setup-go@v2
+#        with:
+#          go-version: "^1.14.0"
+#
+#      - uses: actions/cache@v2
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
+#
+#      - name: Set runtime env
+#        run: |
+#          function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
+#
+#          # if pull request, else push
+#          if [ "${{ github.event_name }}" == "pull_request" ]; then\
+#            actor=${{ github.actor }};\
+#            branch=${{ github.head_ref }};\
+#          else\
+#            actor=${{ github.repository_owner }};\
+#            branch=${GITHUB_REF#refs/heads/};\
+#          fi
+#
+#          echo "FUNCTION_NAME=$function_name" >> $GITHUB_ENV
+#          echo "ACTOR=$actor" >> $GITHUB_ENV
+#          echo "BRANCH=$branch" >> $GITHUB_ENV
+#
+#      - name: Build nuctl
+#        run: make nuctl-bin
+#        working-directory: nuclio
+#
+#      - name: Install nuctl
+#        run: |
+#
+#          # install nuctl
+#          cp nuctl-$NUCLIO_LABEL-linux-amd64 nuctl
+#          sudo -EH install nuctl /usr/local/bin
+#
+#          # print version for sanity
+#          nuctl version
+#        working-directory: nuclio
+#
+#      - name: Deploy function
+#        run: |
+#          nuctl deploy $FUNCTION_NAME \
+#            --verbose \
+#            --runtime python:${{ matrix.python_version }} \
+#            --handler main:handler \
+#            --build-command "@nuclio.postCopy" \
+#            --build-command "pip install git+https://github.com/$ACTOR/nuclio-sdk-py.git@$BRANCH" \
+#            --path $(pwd)/hack/ci_assets/function/main.py
+#        working-directory: nuclio-sdk-py
+#        env:
+#          NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE: volume
+#
+#      - name: Invoke function
+#        run: |
+#          nuctl invoke $FUNCTION_NAME
+#
+#      - name: Print function container logs
+#        run: |
+#          docker logs nuclio-nuclio-$FUNCTION_NAME
