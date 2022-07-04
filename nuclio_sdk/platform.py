@@ -20,7 +20,9 @@ import nuclio_sdk.helpers
 
 
 class Platform(object):
-    def __init__(self, kind, namespace="default", connection_provider=None, control_callback=None):
+    def __init__(
+        self, kind, namespace="default", connection_provider=None, control_callback=None
+    ):
         self.kind = kind
         self.namespace = namespace
 
@@ -29,21 +31,14 @@ class Platform(object):
 
         self.control_callback = control_callback
 
-    async def ensure_explicit_ack(self, topic, partition, offset, trigger_name):
+    async def ensure_explicit_ack(self, event):
         """
         Ensures marking the offset on the stream according to the given arguments
 
-        :param topic [string]
-        :param partition [int]
-        :param offset [int]
-        :param trigger_name [string]
+        :param event
+        :type event
         """
-        message = {
-            "topic": topic,
-            "partition": partition,
-            "offset": offset,
-            "trigger_name": trigger_name,
-        }
+        message = event.get_explicit_ack_message()
         await self.control_callback(message)
 
     def on_abort(self, callback=None):

@@ -37,8 +37,10 @@ class Response(object):
 
     @staticmethod
     def from_entrypoint_output(json_encoder, handler_output):
-        """Given a handler output's type, generates a response towards the
-        processor"""
+        """
+        Given a handler output's type, generates a response towards the
+        processor
+        """
 
         response = Response.empty_response()
 
