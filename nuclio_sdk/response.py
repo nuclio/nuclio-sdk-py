@@ -29,6 +29,12 @@ class Response(object):
         args = ("{}={!r}".format(key, value) for key, value in items)
         return "{}({})".format(cls, ", ".join(args))
 
+    def ensure_no_ack(self):
+        """
+        ensures that offset is not marked on stream
+        """
+        self.headers["x-nuclio-stream-no-ack"] = True
+
     @staticmethod
     def from_entrypoint_output(json_encoder, handler_output):
         """Given a handler output's type, generates a response towards the

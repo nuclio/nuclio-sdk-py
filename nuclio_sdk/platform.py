@@ -20,12 +20,35 @@ import nuclio_sdk.helpers
 
 
 class Platform(object):
-    def __init__(self, kind, namespace="default", connection_provider=None):
+    def __init__(self, kind, namespace="default", connection_provider=None, control_callback=None):
         self.kind = kind
         self.namespace = namespace
 
         # connection_provider is used for unit testing
         self._connection_provider = connection_provider or http.client.HTTPConnection
+
+        self.control_callback = control_callback
+
+    async def ensure_explicit_ack(self, topic, partition, offset, trigger_name):
+        """
+        Ensures marking the offset on the stream according to the given arguments
+
+        :param topic [string]
+        :param partition [int]
+        :param offset [int]
+        :param trigger_name [string]
+        """
+        message = {
+            "topic": topic,
+            "partition": partition,
+            "offset": offset,
+            "trigger_name": trigger_name,
+        }
+        await self.control_callback(message)
+
+    def on_abort(self, callback=None):
+        if callback is not None:
+            callback()
 
     def call_function(
         self, function_name, event, node=None, timeout=None, service_name_override=None
