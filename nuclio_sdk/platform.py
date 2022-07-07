@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import signal
 import http.client
 
 import nuclio_sdk
@@ -50,9 +51,12 @@ class Platform(object):
                 "Cannot send explicit ack since control callback was not initialized"
             )
 
-    async def on_abort(self, callback=None):
-        if callback is not None:
-            callback()
+    def on_signal(self, callback, sig=signal.SIGTERM):
+        """
+        Registers the callback to signal.
+        this function should be called from init_context.
+        """
+        signal.signal(sig, callback)
 
     def call_function(
         self, function_name, event, node=None, timeout=None, service_name_override=None

@@ -229,10 +229,13 @@ class Event(object):
         Return json of offset data
         """
         return {
-            "topic": self.path,
-            "partition": self.shard_id,
-            "offset": self.offset,
-            "trigger_name": self.trigger.name,
+            "kind": "ack",
+            "attributes": {
+                "topic": self.path,
+                "partition": self.shard_id,
+                "offset": self.offset,
+                "trigger_name": self.trigger.name,
+            },
         }
 
     def __repr__(self):
