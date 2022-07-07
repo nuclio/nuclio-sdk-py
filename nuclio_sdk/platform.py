@@ -21,7 +21,11 @@ import nuclio_sdk.helpers
 
 class Platform(object):
     def __init__(
-        self, kind, namespace="default", connection_provider=None, control_callback=None
+        self,
+        kind,
+        namespace="default",
+        connection_provider=None,
+        on_control_callback=None,
     ):
         self.kind = kind
         self.namespace = namespace
@@ -29,19 +33,24 @@ class Platform(object):
         # connection_provider is used for unit testing
         self._connection_provider = connection_provider or http.client.HTTPConnection
 
-        self.control_callback = control_callback
+        self._control_callback = on_control_callback
 
-    async def ensure_explicit_ack(self, event):
+    async def explicit_ack(self, event):
         """
         Ensures marking the offset on the stream according to the given arguments
 
         :param event
-        :type event
+        :type Event
         """
-        message = event.get_explicit_ack_message()
-        await self.control_callback(message)
+        message = event.compile_explicit_ack_message()
+        if self._control_callback:
+            await self._control_callback(message)
+        else:
+            raise Exception(
+                "Cannot send explicit ack since control callback was not initialized"
+            )
 
-    def on_abort(self, callback=None):
+    async def on_abort(self, callback=None):
         if callback is not None:
             callback()
 

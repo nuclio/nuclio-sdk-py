@@ -224,7 +224,7 @@ class Event(object):
         """
         return kind.value.deserialize(data)
 
-    def get_explicit_ack_message(self):
+    def compile_explicit_ack_message(self):
         """
         Return json of offset data
         """
