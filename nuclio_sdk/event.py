@@ -229,7 +229,7 @@ class Event(object):
         Return json of offset data
         """
         return {
-            "kind": "ack",
+            "kind": "streamMessageAck",
             "attributes": {
                 "topic": self.path,
                 "partition": self.shard_id,

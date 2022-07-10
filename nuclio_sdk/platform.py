@@ -38,10 +38,10 @@ class Platform(object):
 
     async def explicit_ack(self, event):
         """
-        Ensures marking the offset on the stream according to the given arguments
+        Notifying the processor to ack a stream message
 
         :param event
-        :type Event
+        :type event
         """
         message = event.compile_explicit_ack_message()
         if self._control_callback:
@@ -53,8 +53,7 @@ class Platform(object):
 
     def on_signal(self, callback, sig=signal.SIGTERM):
         """
-        Registers the callback to signal.
-        this function should be called from init_context.
+        Syntactic sugar to bind an incoming system signal on user's callback
         """
         signal.signal(sig, callback)
 
