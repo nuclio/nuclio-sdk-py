@@ -234,7 +234,7 @@ class Event(object):
                 "topic": self.path,
                 "partition": self.shard_id,
                 "offset": self.offset,
-                "trigger_name": self.trigger.name,
+                "triggerName": self.trigger.name,
             },
         }
 
