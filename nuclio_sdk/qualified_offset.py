@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nuclio_sdk.logger import Logger
-from nuclio_sdk.context import Context
-from nuclio_sdk.event import Event, TriggerInfo, EventDeserializerKinds
-from nuclio_sdk.platform import Platform
-from nuclio_sdk.response import Response
-from nuclio_sdk.exceptions import ExceptionWithResponse
-from nuclio_sdk.qualified_offset import QualifiedOffset
+
+class QualifiedOffset(object):
+    def __init__(self, topic, partition, offset):
+        self.topic = topic
+        self.partition = partition
+        self.offset = offset
+
+    @staticmethod
+    def from_event(event):
+        return QualifiedOffset(event.topic, event.partition, event.offset)
+
+    def compile_explicit_ack_message(self):
+        return {
+            "topic": self.topic,
+            "partition": self.partition,
+            "offset": self.offset,
+        }

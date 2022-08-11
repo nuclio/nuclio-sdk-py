@@ -36,14 +36,14 @@ class Platform(object):
 
         self._control_callback = on_control_callback
 
-    async def explicit_ack(self, event):
+    async def explicit_ack(self, qualified_offset):
         """
-        Notifying the processor to ack a stream message
+        Notifying the processor to ack on a qualified offset
 
-        :param event
-        :type event
+        :param qualified_offset: the qualified offset to ack
+        :type qualified_offset: QualifiedOffset
         """
-        message = event.compile_explicit_ack_message()
+        message = qualified_offset.compile_explicit_ack_message()
         if self._control_callback:
             await self._control_callback(message)
         else:
