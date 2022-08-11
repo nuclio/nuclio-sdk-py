@@ -41,11 +41,8 @@ class Platform(object):
         Notifying the processor to ack a stream message
 
         :param qualified_offset
-        :type qualified_offset
+        :type QualifiedOffset
         """
-        if isinstance(qualified_offset, nuclio_sdk.Event):
-            qualified_offset = nuclio_sdk.QualifiedOffset.from_event(qualified_offset)
-
         message = qualified_offset.compile_explicit_ack_message()
         if self._control_callback:
             await self._control_callback(message)
