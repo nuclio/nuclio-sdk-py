@@ -37,7 +37,8 @@ class Platform(object):
         self._control_callback = on_control_callback
 
     async def explicit_ack(self, qualified_offset):
-        """Notifying the processor to ack on a qualified offset
+        """
+        Notifying the processor to ack on a qualified offset
 
         :param qualified_offset: the qualified offset to ack
         :type qualified_offset: QualifiedOffset
