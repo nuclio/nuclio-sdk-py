@@ -51,7 +51,7 @@ class Platform(object):
                 "Cannot send explicit ack since control callback was not initialized"
             )
 
-    def on_signal(self, callback, sig=signal.SIGTERM):
+    def on_signal(self, callback, sig=signal.SIGUSR1):
         """
         Syntactic sugar to bind an incoming system signal on user's callback
         """
