@@ -31,22 +31,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump github context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      - name: Dump runner context
-        run: echo "$RUNNER_CONTEXT"
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
 
       - name: Install dependencies
         run: |
@@ -63,22 +53,13 @@ jobs:
       matrix:
         python_version: [ 3.7, 3.8, 3.9, 3.10, 3.11 ]
     steps:
-      - name: Dump github context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      - name: Dump runner context
-        run: echo "$RUNNER_CONTEXT"
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python_version }}
+          python-version: '${{ matrix.python_version }}'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -96,39 +77,22 @@ jobs:
       matrix:
         python_version: [ 3.7, 3.8, 3.9, 3.10, 3.11 ]
     steps:
-      - name: Dump github context
-        run: echo "$GITHUB_CONTEXT"
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-
-      - name: Dump runner context
-        run: echo "$RUNNER_CONTEXT"
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-
       - name: Clone Nuclio sdk py
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: nuclio-sdk-py
 
       - name: Clone Nuclio
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: nuclio/nuclio
           ref: development
           path: nuclio
           token: ${{ github.token }}
 
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v4
         with:
           go-version: "^1.14.0"
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/nuclio/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
 
       - name: Set runtime env
         run: |
