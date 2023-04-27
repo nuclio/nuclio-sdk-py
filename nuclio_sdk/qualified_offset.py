@@ -21,7 +21,7 @@ class QualifiedOffset(object):
 
     @staticmethod
     def from_event(event):
-        return QualifiedOffset(event.topic, event.partition, event.offset)
+        return QualifiedOffset(event.path, event.shard_id, event.offset)
 
     def compile_explicit_ack_message(self):
         """
