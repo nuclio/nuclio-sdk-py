@@ -224,19 +224,5 @@ class Event(object):
         """
         return kind.value.deserialize(data)
 
-    def compile_explicit_ack_message(self):
-        """
-        Return json of offset data
-        """
-        return {
-            "kind": "streamMessageAck",
-            "attributes": {
-                "topic": self.path,
-                "partition": self.shard_id,
-                "offset": self.offset,
-                "triggerName": self.trigger.name,
-            },
-        }
-
     def __repr__(self):
         return self.to_json()
