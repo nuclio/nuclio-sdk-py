@@ -24,8 +24,14 @@ class QualifiedOffset(object):
         return QualifiedOffset(event.topic, event.partition, event.offset)
 
     def compile_explicit_ack_message(self):
+        """
+        Return a stream ack message with json of offset data
+        """
         return {
-            "topic": self.topic,
-            "partition": self.partition,
-            "offset": self.offset,
+            "kind": "streamMessageAck",
+            "attributes": {
+                "topic": self.topic,
+                "partition": self.partition,
+                "offset": self.offset,
+            },
         }
