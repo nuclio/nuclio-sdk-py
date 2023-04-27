@@ -20,6 +20,7 @@ import datetime
 
 import nuclio_sdk
 
+
 class _EventDeserializer(object):
     def deserialize(self, event_message):
         raise NotImplementedError
@@ -229,7 +230,9 @@ class Event(object):
         """
         Return json of offset data
         """
-        return nuclio_sdk.QualifiedOffset.from_event(self).compile_explicit_ack_message()
+        return nuclio_sdk.QualifiedOffset.from_event(
+            self
+        ).compile_explicit_ack_message()
 
     def __repr__(self):
         return self.to_json()

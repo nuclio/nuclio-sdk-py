@@ -47,9 +47,7 @@ def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
     )
     return context.Response(
         headers=headers,
-        body={
-            "sdk_version": get_sdk_version(),
-        },
+        body={"sdk_version": get_sdk_version(),},
         content_type=event.content_type,
         status_code=http.HTTPStatus.OK,
     )
