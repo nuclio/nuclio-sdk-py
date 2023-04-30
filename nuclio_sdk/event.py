@@ -18,6 +18,8 @@ import sys
 import json
 import datetime
 
+import nuclio_sdk
+
 
 class _EventDeserializer(object):
     def deserialize(self, event_message):
@@ -228,15 +230,9 @@ class Event(object):
         """
         Return json of offset data
         """
-        return {
-            "kind": "streamMessageAck",
-            "attributes": {
-                "topic": self.path,
-                "partition": self.shard_id,
-                "offset": self.offset,
-                "triggerName": self.trigger.name,
-            },
-        }
+        return nuclio_sdk.QualifiedOffset.from_event(
+            self
+        ).compile_explicit_ack_message()
 
     def __repr__(self):
         return self.to_json()
