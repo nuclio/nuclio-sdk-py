@@ -60,6 +60,7 @@ class _EventDeserializer(object):
             _type=parsed_data["type"],
             type_version=parsed_data["type_version"],
             version=parsed_data["version"],
+            offset=parsed_data["offset"],
         )
 
     @staticmethod
@@ -84,6 +85,7 @@ class _EventDeserializer(object):
             _type=parsed_data[b"type"],
             type_version=parsed_data[b"type_version"],
             version=parsed_data[b"version"],
+            offset=parsed_data[b"offset"],
         )
 
 
