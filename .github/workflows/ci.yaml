@@ -177,7 +177,7 @@ jobs:
 
       - name: Invoke function
         run: |
-          echo "Hello, from CI" | nuctl invoke $FUNCTION_NAME
+          echo "Hello, from CI" | nuctl invoke $FUNCTION_NAME --raise-on-status
 
       - name: Print function container logs
         run: |
