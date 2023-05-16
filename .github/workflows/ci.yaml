@@ -171,14 +171,13 @@ jobs:
             --build-command "@nuclio.postCopy" \
             --build-command "pip install git+https://github.com/$ACTOR/nuclio-sdk-py.git@$BRANCH" \
             --path $(pwd)/hack/ci_assets/function/main.py
-            --raise-on-status
         working-directory: nuclio-sdk-py
         env:
           NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE: volume
 
       - name: Invoke function
         run: |
-          echo "Hello, from CI" | nuctl invoke $FUNCTION_NAME
+          echo "Hello, from CI" | nuctl invoke $FUNCTION_NAME --raise-on-status
 
       - name: Print function container logs
         run: |
