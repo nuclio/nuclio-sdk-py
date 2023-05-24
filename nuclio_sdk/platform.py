@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import signal
 import http.client
 
 import nuclio_sdk
@@ -35,6 +34,7 @@ class Platform(object):
         self._connection_provider = connection_provider or http.client.HTTPConnection
 
         self._control_callback = on_control_callback
+        self._termination_callback = None
 
     async def explicit_ack(self, qualified_offset):
         """
@@ -51,11 +51,20 @@ class Platform(object):
                 "Cannot send explicit ack since control callback was not initialized"
             )
 
-    def on_signal(self, callback, sig=signal.SIGTERM):
+    def on_signal(self):
         """
-        Syntactic sugar to bind an incoming system signal on user's callback
+        When a signal is received, call the termination callback as a hook before exiting
         """
-        signal.signal(sig, callback)
+        if self._termination_callback:
+            self._termination_callback()
+
+    def on_termination(self, callback):
+        """
+        Register a callback to be called when the platform is terminating
+
+        :param callback: the callback to call when terminating
+        """
+        self._termination_callback = callback
 
     def call_function(
         self, function_name, event, node=None, timeout=None, service_name_override=None
