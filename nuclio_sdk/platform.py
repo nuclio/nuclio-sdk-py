@@ -51,20 +51,21 @@ class Platform(object):
                 "Cannot send explicit ack since control callback was not initialized"
             )
 
-    def on_signal(self):
-        """
-        When a signal is received, call the termination callback as a hook before exiting
-        """
-        if self._termination_callback:
-            self._termination_callback()
-
-    def on_termination(self, callback):
+    def set_termination_callback(self, callback):
         """
         Register a callback to be called when the platform is terminating
 
         :param callback: the callback to call when terminating
         """
         self._termination_callback = callback
+
+    def on_signal(self):
+        """
+        When a signal is received, call the termination callback as a hook before exiting
+        If not set, the callback will be a no-op
+        """
+        if self._termination_callback:
+            self._termination_callback()
 
     def call_function(
         self, function_name, event, node=None, timeout=None, service_name_override=None
