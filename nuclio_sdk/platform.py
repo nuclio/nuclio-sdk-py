@@ -53,7 +53,9 @@ class Platform(object):
 
     def set_termination_callback(self, callback):
         """
-        Register a callback to be called when the platform is terminating
+        Register a callback to be called when the platform is terminating.
+        If already registered, the callback will be replaced.
+        When called, the callback will be called with zero arguments.
 
         :param callback: the callback to call when terminating
         """
