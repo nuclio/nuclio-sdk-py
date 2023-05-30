@@ -52,7 +52,6 @@ class TestEvent:
     def test_print_event(self):
         """
         Test that printing an event doesn't raise an exception
-        We don't care about the output, just that it doesn't raise an exception
         """
         event = nuclio_sdk.Event(body=datetime.datetime(2022, 1, 1))
         print(event)
