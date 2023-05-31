@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import datetime
 import json
 
 import nuclio_sdk.test
@@ -48,6 +48,13 @@ class TestEvent:
         event = nuclio_sdk.Event(body=request_body)
         serialized_event = self._deserialize_event(event)
         self.assertEqual(request_body, serialized_event.body)
+
+    def test_print_event(self):
+        """
+        Test that printing an event doesn't raise an exception
+        """
+        event = nuclio_sdk.Event(body=datetime.datetime(2022, 1, 1))
+        print(event)
 
     def _deserialize_event(self, event):
         raise NotImplementedError

@@ -196,7 +196,7 @@ class Event(object):
         if isinstance(obj["body"], bytes):
             obj["body"] = base64.b64encode(obj["body"]).decode("ascii")
 
-        return json.dumps(obj)
+        return json.dumps(obj, default=str)
 
     def get_header(self, header_key):
         for key, value in self.headers.items():
