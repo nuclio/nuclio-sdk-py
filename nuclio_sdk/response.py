@@ -77,9 +77,7 @@ class Response(object):
         else:
             response["body"] = handler_output
 
-        if isinstance(response["body"], bytes):
-            response["body"] = base64.b64encode(response["body"]).decode("ascii")
-            response["body_encoding"] = "base64"
+        Response._ensure_str_body(response)
 
         return response
 
@@ -92,3 +90,12 @@ class Response(object):
             "status_code": 200,
             "body_encoding": "text",
         }
+
+    @staticmethod
+    def _ensure_str_body(response):
+        if isinstance(response["body"], bytes):
+            response["body"] = base64.b64encode(response["body"]).decode("ascii")
+            response["body_encoding"] = "base64"
+
+        if response["body_encoding"] == "text":
+            response["body"] = str(response["body"])

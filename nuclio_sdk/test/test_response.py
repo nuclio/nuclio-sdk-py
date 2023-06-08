@@ -30,7 +30,12 @@ class TestResponse(nuclio_sdk.test.TestCase):
 
     def test_int(self):
         handler_return = 2020
-        expected_response = self._compile_output_response(body=2020)
+        expected_response = self._compile_output_response(body="2020")
+        self._validate_response(handler_return, expected_response)
+
+    def test_float(self):
+        handler_return = 12.34
+        expected_response = self._compile_output_response(body="12.34")
         self._validate_response(handler_return, expected_response)
 
     def test_bytes(self):
@@ -56,7 +61,7 @@ class TestResponse(nuclio_sdk.test.TestCase):
 
     def test_datetime(self):
         handler_return = datetime.datetime.now()
-        expected_response = self._compile_output_response(body=handler_return)
+        expected_response = self._compile_output_response(body=str(handler_return))
         self._validate_response(handler_return, expected_response)
 
     def test_status_code_and_str(self):
