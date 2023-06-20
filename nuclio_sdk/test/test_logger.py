@@ -110,3 +110,21 @@ class TestLogger(nuclio_sdk.test.TestCase):
             '"with": {"some_instance": "Unable to serialize object: I am not a string"}',
             self._io.getvalue(),
         )
+
+    def test_redundant_logger_creation(self):
+
+        # create 3 loggers with the same name
+        logger1 = nuclio_sdk.Logger(logging.DEBUG, "test-logger")
+        logger1.set_handler("default", self._io, nuclio_sdk.logger.JSONFormatter())
+        logger2 = nuclio_sdk.Logger(logging.DEBUG, "test-logger")
+        logger2.set_handler("default", self._io, nuclio_sdk.logger.JSONFormatter())
+        logger3 = nuclio_sdk.Logger(logging.DEBUG, "test-logger")
+        logger3.set_handler("default", self._io, nuclio_sdk.logger.JSONFormatter())
+
+        # log from each logger and make sure only one log line is printed
+        logger1.info("1")
+        assert self._io.getvalue().count('"level": "info", "message": "1"') == 1
+        logger2.info("2")
+        assert self._io.getvalue().count('"level": "info", "message": "2"') == 1
+        logger3.info("3")
+        assert self._io.getvalue().count('"level": "info", "message": "3"') == 1
