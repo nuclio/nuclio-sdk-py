@@ -183,7 +183,11 @@ class Event(object):
         self.offset = offset or 0
 
     def to_json(self):
-        obj = vars(self).copy()
+        obj = {}
+        for field_name, field_value in vars(self).items():
+            # exclude private fields
+            if not field_name.startswith("_"):
+                obj[field_name] = field_value
         obj["trigger"] = {
             "kind": self.trigger.kind,
             "name": self.trigger.name,
