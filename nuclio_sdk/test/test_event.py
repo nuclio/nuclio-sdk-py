@@ -91,3 +91,11 @@ class TestEventJson(nuclio_sdk.test.TestCase, TestEvent):
         return nuclio_sdk.event.Event.deserialize(
             json.dumps(event_json), nuclio_sdk.event.EventDeserializerKinds.json
         )
+
+    def test_event_to_json_excludes_private_fields(self):
+        request_body = "str-body"
+        event = nuclio_sdk.Event(body=request_body)
+        event._private_field = 1
+        event_obj = json.loads(event.to_json())
+        assert "body" in event_obj
+        assert "_private_field" not in event_obj
