@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-PIPENV_PYTHON_VERSION ?= 3.7
+PIPENV_PYTHON_VERSION ?= 3.8
 NUCLIO_SDK_PY_VERSION ?= $(shell git describe --tags --abbrev=0)
 
 .PHONY: all
