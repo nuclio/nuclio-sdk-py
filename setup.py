@@ -47,6 +47,8 @@ def get_version():
         version = f.read().strip()
     if version.startswith("v"):
         version = version[1:]
+    if version == "":
+        return "0.0.0-dev0"
     return version
 
 
