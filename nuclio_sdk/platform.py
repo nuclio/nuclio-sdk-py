@@ -151,6 +151,6 @@ class Platform(object):
         :arg callback_type:str - callback type, can be "termination" or "drain"
         """
         if callback_type == "termination" and self._termination_callback:
-            self._termination_callback()
+            return self._termination_callback()
         elif callback_type == "drain" and self._drain_callback:
-            self._drain_callback()
+            return self._drain_callback()
