@@ -35,7 +35,7 @@ class TestEvent:
             serialized_event.trigger.__dict__,
             {"kind": "http", "name": "my-http-trigger"},
         )
-        self.assertEqual(serialized_event.last_in_batch, False)
+        self.assertFalse(serialized_event.last_in_batch)
         self.assertEqual(serialized_event.offset, 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
@@ -45,9 +45,11 @@ class TestEvent:
 
     def test_event_to_json_string_body(self):
         request_body = "str-body"
-        event = nuclio_sdk.Event(body=request_body)
+        topic = "my-topic"
+        event = nuclio_sdk.Event(body=request_body, topic=topic)
         serialized_event = self._deserialize_event(event)
         self.assertEqual(request_body, serialized_event.body)
+        self.assertEqual(topic, serialized_event.topic)
 
     def test_print_event(self):
         """
