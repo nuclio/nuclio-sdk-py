@@ -61,6 +61,7 @@ class _EventDeserializer(object):
             type_version=parsed_data["type_version"],
             version=parsed_data["version"],
             offset=parsed_data.get("offset", 0),
+            topic=parsed_data.get("topic"),
         )
 
     @staticmethod
@@ -86,6 +87,7 @@ class _EventDeserializer(object):
             type_version=parsed_data[b"type_version"],
             version=parsed_data[b"version"],
             offset=parsed_data.get(b"offset", 0),
+            topic=parsed_data.get(b"topic"),
         )
 
 
@@ -162,6 +164,7 @@ class Event(object):
         version=None,
         last_in_batch=None,
         offset=None,
+        topic=None,
     ):
         self.body = body
         self.content_type = content_type
@@ -181,6 +184,7 @@ class Event(object):
         self.version = version
         self.last_in_batch = last_in_batch or False
         self.offset = offset or 0
+        self.topic = topic
 
     def to_json(self):
         obj = {}
