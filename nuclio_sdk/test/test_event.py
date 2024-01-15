@@ -35,7 +35,7 @@ class TestEvent:
             serialized_event.trigger.__dict__,
             {"kind": "http", "name": "my-http-trigger"},
         )
-        self.assertFalse(serialized_event.last_in_batch, False)
+        self.assertFalse(serialized_event.last_in_batch)
         self.assertEqual(serialized_event.offset, 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
