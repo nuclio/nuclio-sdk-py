@@ -17,7 +17,9 @@ import json
 
 
 class Response(object):
-    def __init__(self, headers=None, body=None, content_type=None, status_code=200, event_id=None):
+    def __init__(
+        self, headers=None, body=None, content_type=None, status_code=200, event_id=None
+    ):
         self.headers = headers or {}
         self.body = body
         self.status_code = status_code
