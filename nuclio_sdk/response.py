@@ -17,11 +17,16 @@ import json
 
 
 class Response(object):
-    def __init__(self, headers=None, body=None, content_type=None, status_code=200):
+    def __init__(
+        self, headers=None, body=None, content_type=None, status_code=200, event_id=None
+    ):
         self.headers = headers or {}
         self.body = body
         self.status_code = status_code
         self.content_type = content_type or "text/plain"
+
+        # id of event, it needs to be set for event batching
+        self.event_id = event_id
 
     def __repr__(self):
         cls = self.__class__.__name__
@@ -71,7 +76,8 @@ class Response(object):
             else:
                 response["body"] = handler_output.body
                 response["content_type"] = handler_output.content_type
-
+            if handler_output.event_id:
+                response["event_id"] = handler_output.event_id
             response["headers"] = handler_output.headers
             response["status_code"] = handler_output.status_code
         else:

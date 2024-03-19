@@ -92,6 +92,11 @@ class TestResponse(nuclio_sdk.test.TestCase):
         )
         self._validate_response(handler_return, expected_response)
 
+    def test_response_with_event_id(self):
+        handler_return = nuclio_sdk.Response(body="test", event_id="1337")
+        expected_response = self._compile_output_response(body="test", event_id="1337")
+        self._validate_response(handler_return, expected_response)
+
     def _validate_response(self, handler_return, expected_response):
         response = nuclio_sdk.Response.from_entrypoint_output(
             self._encoder.encode, handler_return
