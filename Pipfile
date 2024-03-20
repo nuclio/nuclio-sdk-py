@@ -10,7 +10,7 @@ nuclio-sdk = { editable = true, path = "." }
 flake8 = "*"
 twine = "*"
 bleach = "==3.3.0"
-black = "==22.3.0"
+black = "==24.3.0"
 importlib_metadata = "<3"
 build = ">0.2"
 
