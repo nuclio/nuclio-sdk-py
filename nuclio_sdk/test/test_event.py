@@ -39,17 +39,20 @@ class TestEvent:
         self.assertEqual(serialized_event.offset, 0)
 
     def test_batch_to_json_bytes_body(self):
-        event_batch = [nuclio_sdk.Event(
-            body=b"bytes-body-1",
-            content_type="content-type",
-            trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
-            method="GET",
-        ), nuclio_sdk.Event(
-            body=b"bytes-body-2",
-            content_type="content-type",
-            trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
-            method="GET",
-        )]
+        event_batch = [
+            nuclio_sdk.Event(
+                body=b"bytes-body-1",
+                content_type="content-type",
+                trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+                method="GET",
+            ),
+            nuclio_sdk.Event(
+                body=b"bytes-body-2",
+                content_type="content-type",
+                trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+                method="GET",
+            ),
+        ]
         serialized_event_batch = self._deserialize_event(event_batch)
         item1 = serialized_event_batch[0]
         item2 = serialized_event_batch[1]
@@ -70,7 +73,10 @@ class TestEvent:
         self.assertEqual(serialized_event.body, "gGFiYw==")
 
     def test_batch_to_json_bytes_non_utf8able_body(self):
-        event_batch = [nuclio_sdk.Event(body=b"\x80abc"), nuclio_sdk.Event(body=b"\x80abcd")]
+        event_batch = [
+            nuclio_sdk.Event(body=b"\x80abc"),
+            nuclio_sdk.Event(body=b"\x80abcd"),
+        ]
         serialized_event_batch = self._deserialize_event(event_batch)
         self.assertEqual(serialized_event_batch[0].body, "gGFiYw==")
         self.assertEqual(serialized_event_batch[1].body, "gGFiY2Q=")
@@ -97,7 +103,9 @@ class TestEvent:
 class TestEventMsgPack(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         if isinstance(event, list):
-            event_json = [{k: v for k, v in json.loads(item.to_json()).items()} for item in event]
+            event_json = [
+                {k: v for k, v in json.loads(item.to_json()).items()} for item in event
+            ]
         else:
             event_json = {k: v for k, v in json.loads(event.to_json()).items()}
         return nuclio_sdk.event.Event.deserialize(
@@ -108,7 +116,9 @@ class TestEventMsgPack(nuclio_sdk.test.TestCase, TestEvent):
 class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         if isinstance(event, list):
-            event_json = [{k: v for k, v in json.loads(item.to_json()).items()} for item in event]
+            event_json = [
+                {k: v for k, v in json.loads(item.to_json()).items()} for item in event
+            ]
             for item in event_json:
                 self._event_keys_to_byte_string(item)
         else:
@@ -130,7 +140,9 @@ class TestEventMsgPackRaw(nuclio_sdk.test.TestCase, TestEvent):
 class TestEventJson(nuclio_sdk.test.TestCase, TestEvent):
     def _deserialize_event(self, event):
         if isinstance(event, list):
-            event_json = [{k: v for k, v in json.loads(item.to_json()).items()} for item in event]
+            event_json = [
+                {k: v for k, v in json.loads(item.to_json()).items()} for item in event
+            ]
         else:
             event_json = {k: v for k, v in json.loads(event.to_json()).items()}
         return nuclio_sdk.event.Event.deserialize(
