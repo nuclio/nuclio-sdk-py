@@ -90,14 +90,14 @@ class _EventDeserializer(object):
         )
 
     @staticmethod
-    def decode_single_or_list_event(parsed_data, decode_single_event):
+    def decode_single_or_list_event(parsed_data, decode_single_event_function):
         if isinstance(parsed_data, list):
             return [
-                decode_single_event(single_event_data)
+                decode_single_event_function(single_event_data)
                 for single_event_data in parsed_data
             ]
         else:
-            return decode_single_event(parsed_data)
+            return decode_single_event_function(parsed_data)
 
 
 class _EventDeserializerMsgPack(_EventDeserializer):
