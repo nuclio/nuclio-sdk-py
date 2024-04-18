@@ -39,17 +39,19 @@ class TestEvent:
         self.assertEqual(serialized_event.offset, 0)
 
     def test_batch_to_json_bytes_body(self):
+        trigger_name = "my-http-trigger"
+        trigger_kind = "http"
         event_batch = [
             nuclio_sdk.Event(
                 body=b"bytes-body-1",
                 content_type="content-type",
-                trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+                trigger=nuclio_sdk.TriggerInfo(kind=trigger_kind, name=trigger_name),
                 method="GET",
             ),
             nuclio_sdk.Event(
                 body=b"bytes-body-2",
                 content_type="content-type",
-                trigger=nuclio_sdk.TriggerInfo(kind="http", name="my-http-trigger"),
+                trigger=nuclio_sdk.TriggerInfo(kind=trigger_kind, name=trigger_name),
                 method="GET",
             ),
         ]
@@ -58,14 +60,15 @@ class TestEvent:
         item2 = serialized_event_batch[1]
         self.assertEqual(item1.body, "Ynl0ZXMtYm9keS0x")
         self.assertEqual(item2.body, "Ynl0ZXMtYm9keS0y")
-        self.assertEqual(item1.content_type, "content-type")
-        self.assertEqual(item1.method, "GET")
-        self.assertDictEqual(
-            item1.trigger.__dict__,
-            {"kind": "http", "name": "my-http-trigger"},
-        )
-        self.assertFalse(item1.last_in_batch)
-        self.assertEqual(item1.offset, 0)
+        for item in [item1, item2]:
+            self.assertEqual(item.content_type, "content-type")
+            self.assertEqual(item.method, "GET")
+            self.assertDictEqual(
+                item.trigger.__dict__,
+                {"kind": trigger_kind, "name": trigger_name},
+            )
+            self.assertFalse(item.last_in_batch)
+            self.assertEqual(item.offset, 0)
 
     def test_event_to_json_bytes_non_utf8able_body(self):
         event = nuclio_sdk.Event(body=b"\x80abc")
