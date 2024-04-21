@@ -30,7 +30,6 @@ class _EventDeserializer(object):
         try:
             return json.loads(body.decode("utf-8"))
         except Exception as exc:
-
             # newline to force flush
             # NOTE: processor runs sdk with `-u` which means stderr is unbuffered which needs manual flushing
             sys.stderr.write(
@@ -90,10 +89,19 @@ class _EventDeserializer(object):
             topic=parsed_data.get(b"topic"),
         )
 
+    @staticmethod
+    def decode_single_or_list_event(parsed_data, decode_single_event_function):
+        if isinstance(parsed_data, list):
+            return [
+                decode_single_event_function(single_event_data)
+                for single_event_data in parsed_data
+            ]
+        else:
+            return decode_single_event_function(parsed_data)
+
 
 class _EventDeserializerMsgPack(_EventDeserializer):
     def __init__(self, raw=False):
-
         # return the concrete function that handled raw/decoded event messages
         # pre-assign to avoid if/else during event processing
         self._from_msgpack_handler = (
@@ -103,32 +111,40 @@ class _EventDeserializerMsgPack(_EventDeserializer):
     def deserialize(self, event_message):
         return self._from_msgpack_handler(event_message)
 
-    @staticmethod
-    def _from_msgpack_raw(parsed_data):
-        event_body = parsed_data[b"body"]
-        if parsed_data[b"content_type"] == b"application/json":
-            event_body = _EventDeserializer._try_deserialize_json(event_body)
-        return _EventDeserializer._from_parsed_data_bytes(parsed_data, event_body)
+    def _from_msgpack_raw(self, parsed_data):
+        def _decode_single_event(single_event_data):
+            event_body = single_event_data[b"body"]
+            if single_event_data[b"content_type"] == b"application/json":
+                event_body = _EventDeserializer._try_deserialize_json(event_body)
+            return _EventDeserializer._from_parsed_data_bytes(
+                single_event_data, event_body
+            )
 
-    @staticmethod
-    def _from_msgpack_decoded(parsed_data):
-        event_body = parsed_data["body"]
-        if parsed_data["content_type"] == "application/json":
-            event_body = _EventDeserializer._try_deserialize_json(event_body)
-        return _EventDeserializer._from_parsed_data(parsed_data, event_body)
+        return self.decode_single_or_list_event(parsed_data, _decode_single_event)
+
+    def _from_msgpack_decoded(self, parsed_data):
+        def _decode_single_event(single_event_data):
+            event_body = single_event_data["body"]
+            if single_event_data["content_type"] == "application/json":
+                event_body = _EventDeserializer._try_deserialize_json(event_body)
+            return _EventDeserializer._from_parsed_data(single_event_data, event_body)
+
+        return self.decode_single_or_list_event(parsed_data, _decode_single_event)
 
 
 class _EventDeserializerJSON(_EventDeserializer):
     def deserialize(self, event_message):
         parsed_data = json.loads(event_message)
 
-        # extract content type, needed to decode body
-        body = parsed_data["body"]
-        if parsed_data["content_type"] == "application/json" and not isinstance(
-            body, dict
-        ):
-            body = _EventDeserializer._try_deserialize_json(body)
-        return _EventDeserializer._from_parsed_data(parsed_data, body)
+        def _deserialize_single_event(single_event):
+            body = single_event["body"]
+            if single_event["content_type"] == "application/json" and not isinstance(
+                body, dict
+            ):
+                body = _EventDeserializer._try_deserialize_json(body)
+            return _EventDeserializer._from_parsed_data(single_event, body)
+
+        return self.decode_single_or_list_event(parsed_data, _deserialize_single_event)
 
 
 class EventDeserializerKinds(enum.Enum):
