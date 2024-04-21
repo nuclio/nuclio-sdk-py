@@ -122,8 +122,7 @@ class _EventDeserializerMsgPack(_EventDeserializer):
 
         return self.decode_single_or_list_event(parsed_data, _decode_single_event)
 
-    @staticmethod
-    def _from_msgpack_decoded(parsed_data):
+    def _from_msgpack_decoded(self, parsed_data):
         def _decode_single_event(single_event_data):
             event_body = single_event_data["body"]
             if single_event_data["content_type"] == "application/json":
