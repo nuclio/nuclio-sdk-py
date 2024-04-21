@@ -130,13 +130,7 @@ class _EventDeserializerMsgPack(_EventDeserializer):
                 event_body = _EventDeserializer._try_deserialize_json(event_body)
             return _EventDeserializer._from_parsed_data(single_event_data, event_body)
 
-        if isinstance(parsed_data, list):
-            return [
-                _decode_single_event(single_event_data)
-                for single_event_data in parsed_data
-            ]
-        else:
-            return _decode_single_event(parsed_data)
+        return self.decode_single_or_list_event(parsed_data, _decode_single_event)
 
 
 class _EventDeserializerJSON(_EventDeserializer):
