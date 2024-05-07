@@ -38,9 +38,11 @@ def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
                 "type": event.type,
                 "typeVersion": event.type_version,
                 "version": event.version,
-                "body": event.body
-                if isinstance(event.body, dict)
-                else event.body.decode("utf8"),
+                "body": (
+                    event.body
+                    if isinstance(event.body, dict)
+                    else event.body.decode("utf8")
+                ),
             },
             default=json_default,
         ),
