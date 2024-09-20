@@ -21,7 +21,9 @@ class QualifiedOffset(object):
 
     @staticmethod
     def from_event(event):
-        return QualifiedOffset(evnt.topic, event.shard_id, event.offset)
+        # topic resolving required to keep BC (NUC-233)
+        topic = event.topic if event.topic else event.path
+        return QualifiedOffset(topic, event.shard_id, event.offset)
 
     def compile_explicit_ack_message(self):
         """
