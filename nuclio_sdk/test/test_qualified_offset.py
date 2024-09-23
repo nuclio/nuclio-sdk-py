@@ -37,6 +37,13 @@ class TestQualifiedOffset(nuclio_sdk.test.TestCase):
         actual_explicit_ack_message = qualified_offset.compile_explicit_ack_message()
         self.assertEqual(expected_explicit_ack_message, actual_explicit_ack_message)
 
+        # check that if topic is passed, it takes precedence
+        event.topic = "topic"
+        expected_explicit_ack_message["attributes"]["topic"] = "topic"
+        qualified_offset = nuclio_sdk.QualifiedOffset.from_event(event)
+        actual_explicit_ack_message = qualified_offset.compile_explicit_ack_message()
+        self.assertEqual(expected_explicit_ack_message, actual_explicit_ack_message)
+
     def _check_equal_qualified_offsets(self, expected, actual):
         self.assertEqual(expected.topic, actual.topic)
         self.assertEqual(expected.partition, actual.partition)
