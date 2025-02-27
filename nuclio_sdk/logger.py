@@ -29,8 +29,8 @@ class JSONFormatter(logging.Formatter):
 
     def format_to_log_control_message(self, record):
         record_fields = {
-            'kind': 'log',
-            'attributes': self._get_formatted_record_dict(record),
+            "kind": "log",
+            "attributes": self._get_formatted_record_dict(record),
         }
         return self._json_encoder.encode(record_fields)
 
