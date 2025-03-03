@@ -24,14 +24,23 @@ class JSONFormatter(logging.Formatter):
         self._json_encoder = nuclio_sdk.json_encoder.Encoder()
 
     def format(self, record):
+        record_fields = self._get_formatted_record_dict(record)
+        return self._json_encoder.encode(record_fields)
+
+    def format_to_log_control_message(self, record):
         record_fields = {
+            "kind": "log",
+            "attributes": self._get_formatted_record_dict(record),
+        }
+        return self._json_encoder.encode(record_fields)
+
+    def _get_formatted_record_dict(self, record):
+        return {
             "datetime": self.formatTime(record, self.datefmt),
             "level": record.levelname.lower(),
             "message": record.getMessage(),
             "with": getattr(record, "with", {}),
         }
-
-        return self._json_encoder.encode(record_fields)
 
 
 class HumanReadableFormatter(logging.Formatter):
