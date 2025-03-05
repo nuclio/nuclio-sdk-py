@@ -18,10 +18,21 @@ import contextvars
 
 
 class Context(object):
-    def __init__(self, logger=None, platform=None, worker_id=None, trigger=None, logger_per_async_task=False):
+    def __init__(
+        self,
+        logger=None,
+        platform=None,
+        worker_id=None,
+        trigger=None,
+        logger_per_async_task=False,
+    ):
         self.platform = platform or nuclio_sdk.Platform("test")
         self._logger_per_async_tasks = logger_per_async_task
-        self._logger = logger if not logger_per_async_task else contextvars.ContextVar("logger", default=None)
+        self._logger = (
+            logger
+            if not logger_per_async_task
+            else contextvars.ContextVar("logger", default=None)
+        )
         # placeholder for shared between all the tasks logger
         self._shared_logger = logger
         self.user_data = lambda: None
