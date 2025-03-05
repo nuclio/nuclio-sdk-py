@@ -14,6 +14,7 @@
 
 import nuclio_sdk
 import nuclio_sdk.event
+import contextvars
 
 
 class Context(object):
@@ -44,4 +45,3 @@ class Context(object):
             self._logger.set(logger)
         else:
             self._logger = logger
-
