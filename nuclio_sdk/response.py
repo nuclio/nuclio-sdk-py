@@ -14,6 +14,12 @@
 
 import base64
 import json
+import types
+import typing
+
+SINGLE_RESPONSE = "single"
+GENERATOR_RESPONSE = "generator"
+RESPONSE_WITH_GENERATOR_BODY = "response_with_generator_body"
 
 
 class Response(object):
@@ -41,12 +47,67 @@ class Response(object):
         self.headers["x-nuclio-stream-no-ack"] = True
 
     @staticmethod
+    async def from_entrypoint_output_async(json_encoder, handler_output):
+
+        handler_output_type = Response.get_handler_output_type(handler_output)
+        # Support streaming via sync or async generator
+        if handler_output_type == GENERATOR_RESPONSE:
+            async for chunk in Response.from_generator_output(
+                json_encoder, handler_output
+            ):
+                yield chunk
+
+        # If the handler output is a Response object with a generator body
+        elif handler_output_type == RESPONSE_WITH_GENERATOR_BODY:
+            async for chunk in Response.from_generator_output(
+                json_encoder, handler_output.body
+            ):
+                yield chunk
+
+        else:
+            yield Response.from_entrypoint_output(json_encoder, handler_output)
+
+    @staticmethod
+    def get_handler_output_type(handler_output):
+        if isinstance(handler_output, (types.AsyncGeneratorType, types.GeneratorType)):
+            return GENERATOR_RESPONSE
+        if isinstance(handler_output, Response) and isinstance(
+            handler_output.body, (types.AsyncGeneratorType, types.GeneratorType)
+        ):
+            return RESPONSE_WITH_GENERATOR_BODY
+        return SINGLE_RESPONSE
+
+    @staticmethod
+    async def from_generator_output(json_encoder, generator):
+        first = True
+        async_gen = (
+            generator
+            if isinstance(generator, types.AsyncGeneratorType)
+            else _sync_to_async_gen(generator)
+        )
+
+        async for item in async_gen:
+            if first:
+                first = False
+                # Use regular response logic for the first item only
+                # so it includes headers, status code, etc.
+                response = Response.from_entrypoint_output(json_encoder, item)
+                yield response
+            else:
+                # All subsequent outputs are base64-encoded raw bodies
+                # extract response body if it's a Response object
+                raw = item.body if isinstance(item, Response) else item
+                encoded = base64.b64encode(
+                    raw.encode() if isinstance(raw, str) else raw
+                ).decode("ascii")
+                yield encoded
+
+    @staticmethod
     def from_entrypoint_output(json_encoder, handler_output):
         """
         Given a handler output's type, generates a response towards the
         processor
         """
-
         response = Response.empty_response()
 
         # if the type of the output is a string, just return that and 200
@@ -105,3 +166,9 @@ class Response(object):
 
         if response["body_encoding"] == "text":
             response["body"] = str(response["body"])
+
+
+async def _sync_to_async_gen(sync_gen):
+    # Helper to convert sync generator to async generator
+    for item in sync_gen:
+        yield item
