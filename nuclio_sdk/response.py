@@ -49,20 +49,17 @@ class Response(object):
     async def from_entrypoint_output_async(json_encoder, handler_output):
 
         handler_output_type = Response.get_handler_output_type(handler_output)
-        # Support streaming via sync or async generator
-        if handler_output_type == GENERATOR_RESPONSE:
+
+        if handler_output_type in [GENERATOR_RESPONSE, RESPONSE_WITH_GENERATOR_BODY]:
+            response_output = (
+                handler_output.body
+                if handler_output_type == RESPONSE_WITH_GENERATOR_BODY
+                else handler_output
+            )
             async for chunk in Response.from_generator_output(
-                json_encoder, handler_output
+                json_encoder, response_output
             ):
                 yield chunk
-
-        # If the handler output is a Response object with a generator body
-        elif handler_output_type == RESPONSE_WITH_GENERATOR_BODY:
-            async for chunk in Response.from_generator_output(
-                json_encoder, handler_output.body
-            ):
-                yield chunk
-
         else:
             yield Response.from_entrypoint_output(json_encoder, handler_output)
 
