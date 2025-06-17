@@ -15,7 +15,6 @@
 import base64
 import json
 import types
-import typing
 
 SINGLE_RESPONSE = "single"
 GENERATOR_RESPONSE = "generator"

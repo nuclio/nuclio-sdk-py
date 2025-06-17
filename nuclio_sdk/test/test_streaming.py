@@ -85,15 +85,12 @@ def test_get_handler_output_type(use_async):
     assert Response.get_handler_output_type(gen) == GENERATOR_RESPONSE
 
     # Case 2: handler_output is a Response with generator body
-    resp_with_gen_body = Response(body=gen)
-    assert (
-        Response.get_handler_output_type(resp_with_gen_body)
-        == RESPONSE_WITH_GENERATOR_BODY
-    )
+    response = Response(body=gen)
+    assert Response.get_handler_output_type(response) == RESPONSE_WITH_GENERATOR_BODY
 
     # Case 3: handler_output is a plain Response with non-generator body
-    resp_plain = Response(body="non-generator body")
-    assert Response.get_handler_output_type(resp_plain) == SINGLE_RESPONSE
+    response = Response(body="non-generator body")
+    assert Response.get_handler_output_type(response) == SINGLE_RESPONSE
 
     # Case 4: handler_output is something else (e.g., string)
     assert Response.get_handler_output_type("hello") == SINGLE_RESPONSE
