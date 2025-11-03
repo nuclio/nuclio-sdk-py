@@ -47,7 +47,6 @@ class Response(object):
 
     @staticmethod
     async def from_entrypoint_output_async(json_encoder, handler_output):
-
         handler_output_type = Response.get_handler_output_type(handler_output)
 
         if handler_output_type in [GENERATOR_RESPONSE, RESPONSE_WITH_GENERATOR_BODY]:
@@ -57,7 +56,13 @@ class Response(object):
                 else handler_output
             )
             async for chunk in Response.from_generator_output(
-                json_encoder, response_output
+                json_encoder=json_encoder,
+                body_generator=response_output,
+                response_object=(
+                    handler_output
+                    if handler_output_type == RESPONSE_WITH_GENERATOR_BODY
+                    else None
+                ),
             ):
                 yield chunk
         else:
@@ -74,27 +79,41 @@ class Response(object):
         return SINGLE_RESPONSE
 
     @staticmethod
-    async def from_generator_output(json_encoder, generator):
+    async def from_generator_output(
+        json_encoder,
+        body_generator,
+        response_object,
+    ):
         first = True
-        async_gen = (
-            generator
-            if isinstance(generator, types.AsyncGeneratorType)
-            else _sync_to_async_gen(generator)
+        async_body_gen = (
+            body_generator
+            if isinstance(body_generator, types.AsyncGeneratorType)
+            else _sync_to_async_gen(body_generator)
         )
 
-        async for item in async_gen:
+        async for body_item in async_body_gen:
+            raw_body = body_item.body if isinstance(body_item, Response) else body_item
             if first:
                 first = False
                 # Use regular response logic for the first item only
                 # so it includes headers, status code, etc.
-                response = Response.from_entrypoint_output(json_encoder, item)
+
+                # If user code returned a response object with body as generator which yields bodies
+                # we need to create a copy of the original response object with the first item as body
+                # because even if generator yields Response objects, context_type and response from the global
+                # Response should take precedence
+                if isinstance(response_object, Response):
+                    body_item = response_object._get_copy_with_custom_body(
+                        body=raw_body
+                    )
+
+                response = Response.from_entrypoint_output(json_encoder, body_item)
                 yield response
             else:
                 # All subsequent outputs are base64-encoded raw bodies
                 # extract response body if it's a Response object
-                raw = item.body if isinstance(item, Response) else item
                 encoded = base64.b64encode(
-                    raw.encode() if isinstance(raw, str) else raw
+                    raw_body.encode() if isinstance(raw_body, str) else raw_body
                 ).decode("ascii")
                 yield encoded
 
@@ -162,6 +181,15 @@ class Response(object):
 
         if response["body_encoding"] == "text":
             response["body"] = str(response["body"])
+
+    def _get_copy_with_custom_body(self, body):
+        return Response(
+            headers=self.headers.copy(),
+            body=body,
+            content_type=self.content_type,
+            status_code=self.status_code,
+            event_id=self.event_id,
+        )
 
 
 async def _sync_to_async_gen(sync_gen):
