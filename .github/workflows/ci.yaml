@@ -171,6 +171,7 @@ jobs:
           nuctl deploy $FUNCTION_NAME \
             --verbose \
             --runtime python:${{ matrix.python_version }} \
+            --project-name default \
             --handler main:handler \
             --build-command "@nuclio.postCopy" \
             --build-command "pip install git+https://github.com/$ACTOR/nuclio-sdk-py.git@$BRANCH" \
