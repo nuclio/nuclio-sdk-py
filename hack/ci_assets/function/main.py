@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pkg_resources
 import http
 import json
+from importlib.metadata import version
 
 import nuclio_sdk
 
@@ -58,7 +58,7 @@ def handler(context: nuclio_sdk.Context, event: nuclio_sdk.Event):
 
 
 def get_sdk_version():
-    return pkg_resources.get_distribution("nuclio_sdk").version
+    return version("nuclio_sdk")
 
 
 def json_default(s):
