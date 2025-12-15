@@ -58,6 +58,10 @@ install_pipenv: ensure-version
 	python -m pipenv --python ${PIPENV_PYTHON_VERSION}
 	python -m pipenv install --dev
 
+.PHONY: lock
+lock:
+	python -m pipenv lock
+
 .PHONY: ensure-version
 ensure-version:
 	@echo $(NUCLIO_SDK_PY_VERSION) | tee VERSION
