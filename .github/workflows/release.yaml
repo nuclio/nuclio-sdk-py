@@ -21,7 +21,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
 
 env:
-  PIPENV_PYTHON_VERSION: 3.9
+  PIPENV_PYTHON_VERSION: 3.11
 
 jobs:
   build-and-release:
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PIPENV_PYTHON_VERSION }}
 
