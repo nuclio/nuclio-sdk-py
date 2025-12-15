@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-PIPENV_PYTHON_VERSION ?= 3.8
+PIPENV_PYTHON_VERSION ?= 3.11
 NUCLIO_SDK_PY_VERSION ?= $(shell git describe --tags --abbrev=0)
 
 .PHONY: all
@@ -57,6 +57,10 @@ install_pipenv: ensure-version
 	python -m pip install --user pipenv
 	python -m pipenv --python ${PIPENV_PYTHON_VERSION}
 	python -m pipenv install --dev
+
+.PHONY: lock
+lock:
+	python -m pipenv lock
 
 .PHONY: ensure-version
 ensure-version:
