@@ -24,6 +24,9 @@ on:
       - master
       - development
 
+permissions:
+  contents: read
+
 env:
   NUCLIO_LABEL: unstable
 
