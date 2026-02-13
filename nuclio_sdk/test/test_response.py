@@ -107,9 +107,7 @@ class TestResponse(nuclio_sdk.test.TestCase):
             for i in range(1, 4):
                 yield i
 
-        results = asyncio.get_event_loop().run_until_complete(
-            self._collect_generator_output(int_generator())
-        )
+        results = asyncio.run(self._collect_generator_output(int_generator()))
 
         # First item goes through from_entrypoint_output (returns a dict response)
         self.assertIsInstance(results[0], dict)
@@ -125,9 +123,7 @@ class TestResponse(nuclio_sdk.test.TestCase):
             yield "first"
             yield "second"
 
-        results = asyncio.get_event_loop().run_until_complete(
-            self._collect_generator_output(str_generator())
-        )
+        results = asyncio.run(self._collect_generator_output(str_generator()))
 
         self.assertIsInstance(results[0], dict)
         self.assertEqual(results[0]["body"], "first")
@@ -140,9 +136,7 @@ class TestResponse(nuclio_sdk.test.TestCase):
             yield b"first"
             yield b"second"
 
-        results = asyncio.get_event_loop().run_until_complete(
-            self._collect_generator_output(bytes_generator())
-        )
+        results = asyncio.run(self._collect_generator_output(bytes_generator()))
 
         self.assertIsInstance(results[0], dict)
         # First item goes through from_entrypoint_output which base64-encodes bytes
@@ -160,22 +154,14 @@ class TestResponse(nuclio_sdk.test.TestCase):
             yield 3.14
             yield b"raw"
 
-        results = asyncio.get_event_loop().run_until_complete(
-            self._collect_generator_output(mixed_generator())
-        )
+        results = asyncio.run(self._collect_generator_output(mixed_generator()))
 
         self.assertIsInstance(results[0], dict)
         self.assertEqual(results[0]["body"], "hello")
 
-        self.assertEqual(
-            results[1], base64.b64encode(b"42").decode("ascii")
-        )
-        self.assertEqual(
-            results[2], base64.b64encode(b"3.14").decode("ascii")
-        )
-        self.assertEqual(
-            results[3], base64.b64encode(b"raw").decode("ascii")
-        )
+        self.assertEqual(results[1], base64.b64encode(b"42").decode("ascii"))
+        self.assertEqual(results[2], base64.b64encode(b"3.14").decode("ascii"))
+        self.assertEqual(results[3], base64.b64encode(b"raw").decode("ascii"))
 
     def test_generator_output_with_response_object(self):
         """Verify that when a Response object wraps a generator body,
@@ -193,7 +179,7 @@ class TestResponse(nuclio_sdk.test.TestCase):
             status_code=201,
         )
 
-        results = asyncio.get_event_loop().run_until_complete(
+        results = asyncio.run(
             self._collect_generator_output(
                 response_object.body, response_object=response_object
             )
@@ -207,12 +193,8 @@ class TestResponse(nuclio_sdk.test.TestCase):
         self.assertEqual(results[0]["headers"], {"X-Custom": "header"})
 
         # Subsequent chunks are base64-encoded
-        self.assertEqual(
-            results[1], base64.b64encode(b"chunk2").decode("ascii")
-        )
-        self.assertEqual(
-            results[2], base64.b64encode(b"99").decode("ascii")
-        )
+        self.assertEqual(results[1], base64.b64encode(b"chunk2").decode("ascii"))
+        self.assertEqual(results[2], base64.b64encode(b"99").decode("ascii"))
 
     async def _collect_generator_output(self, generator, response_object=None):
         results = []
