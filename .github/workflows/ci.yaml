@@ -138,8 +138,9 @@ jobs:
           function_name=$(echo "sdk-py-func-${{ matrix.python_version }}" |  tr '.' '-')
 
           # if pull request, else push
+          # use head repo owner (not github.actor) to correctly resolve the repo
           if [ "${{ github.event_name }}" == "pull_request" ]; then\
-            actor=${{ github.actor }};\
+            actor=${{ github.event.pull_request.head.repo.owner.login }};\
             branch=${{ github.head_ref }};\
           else\
             actor=${{ github.repository_owner }};\
