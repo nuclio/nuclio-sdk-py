@@ -112,9 +112,13 @@ class Response(object):
             else:
                 # All subsequent outputs are base64-encoded raw bodies
                 # extract response body if it's a Response object
-                encoded = base64.b64encode(
-                    raw_body.encode() if isinstance(raw_body, str) else raw_body
-                ).decode("ascii")
+                if isinstance(raw_body, str):
+                    raw_bytes = raw_body.encode()
+                elif isinstance(raw_body, (bytes, bytearray)):
+                    raw_bytes = raw_body
+                else:
+                    raw_bytes = str(raw_body).encode()
+                encoded = base64.b64encode(raw_bytes).decode("ascii")
                 yield encoded
 
     @staticmethod
