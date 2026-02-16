@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+import base64
 import datetime
 
 import nuclio_sdk.test
@@ -96,6 +98,113 @@ class TestResponse(nuclio_sdk.test.TestCase):
         handler_return = nuclio_sdk.Response(body="test", event_id="1337")
         expected_response = self._compile_output_response(body="test", event_id="1337")
         self._validate_response(handler_return, expected_response)
+
+    def test_generator_output_with_integers(self):
+        """Regression test: yielding integers from a generator should not crash
+        with 'int is not a bytes-like object' on subsequent chunks."""
+
+        def int_generator():
+            for i in range(1, 4):
+                yield i
+
+        results = asyncio.run(self._collect_generator_output(int_generator()))
+
+        # First item goes through from_entrypoint_output (returns a dict response)
+        self.assertIsInstance(results[0], dict)
+        self.assertEqual(results[0]["body"], "1")
+
+        # Subsequent items are base64-encoded strings
+        for idx, value in enumerate([2, 3], start=1):
+            expected_encoded = base64.b64encode(str(value).encode()).decode("ascii")
+            self.assertEqual(results[idx], expected_encoded)
+
+    def test_generator_output_with_strings(self):
+        def str_generator():
+            yield "first"
+            yield "second"
+
+        results = asyncio.run(self._collect_generator_output(str_generator()))
+
+        self.assertIsInstance(results[0], dict)
+        self.assertEqual(results[0]["body"], "first")
+
+        expected_encoded = base64.b64encode(b"second").decode("ascii")
+        self.assertEqual(results[1], expected_encoded)
+
+    def test_generator_output_with_bytes(self):
+        def bytes_generator():
+            yield b"first"
+            yield b"second"
+
+        results = asyncio.run(self._collect_generator_output(bytes_generator()))
+
+        self.assertIsInstance(results[0], dict)
+        # First item goes through from_entrypoint_output which base64-encodes bytes
+        self.assertEqual(results[0]["body"], base64.b64encode(b"first").decode("ascii"))
+
+        expected_encoded = base64.b64encode(b"second").decode("ascii")
+        self.assertEqual(results[1], expected_encoded)
+
+    def test_generator_output_with_mixed_types(self):
+        """Verify generator handles a mix of str, int, float, and bytes."""
+
+        def mixed_generator():
+            yield "hello"
+            yield 42
+            yield 3.14
+            yield b"raw"
+
+        results = asyncio.run(self._collect_generator_output(mixed_generator()))
+
+        self.assertIsInstance(results[0], dict)
+        self.assertEqual(results[0]["body"], "hello")
+
+        self.assertEqual(results[1], base64.b64encode(b"42").decode("ascii"))
+        self.assertEqual(results[2], base64.b64encode(b"3.14").decode("ascii"))
+        self.assertEqual(results[3], base64.b64encode(b"raw").decode("ascii"))
+
+    def test_generator_output_with_response_object(self):
+        """Verify that when a Response object wraps a generator body,
+        the first chunk inherits headers/status from the Response."""
+
+        def body_generator():
+            yield "chunk1"
+            yield "chunk2"
+            yield 99
+
+        response_object = nuclio_sdk.Response(
+            headers={"X-Custom": "header"},
+            body=body_generator(),
+            content_type="text/html",
+            status_code=201,
+        )
+
+        results = asyncio.run(
+            self._collect_generator_output(
+                response_object.body, response_object=response_object
+            )
+        )
+
+        # First chunk inherits headers, status, content_type from the Response object
+        self.assertIsInstance(results[0], dict)
+        self.assertEqual(results[0]["body"], "chunk1")
+        self.assertEqual(results[0]["status_code"], 201)
+        self.assertEqual(results[0]["content_type"], "text/html")
+        self.assertEqual(results[0]["headers"], {"X-Custom": "header"})
+
+        # Subsequent chunks are base64-encoded
+        self.assertEqual(results[1], base64.b64encode(b"chunk2").decode("ascii"))
+        self.assertEqual(results[2], base64.b64encode(b"99").decode("ascii"))
+
+    async def _collect_generator_output(self, generator, response_object=None):
+        results = []
+        async for chunk in nuclio_sdk.Response.from_generator_output(
+            json_encoder=self._encoder.encode,
+            body_generator=generator,
+            response_object=response_object,
+        ):
+            results.append(chunk)
+        return results
 
     def _validate_response(self, handler_return, expected_response):
         response = nuclio_sdk.Response.from_entrypoint_output(
